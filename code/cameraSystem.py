@@ -26,16 +26,22 @@ cameraConnection = False
 
 try:
     import neoapi
+    import vax_io
     class VideoCamera(object):
         def __init__(self):
             self.video_path = join(getcwd(),'temp','video_temp.avi')
             self.result = 0
             isColor = True
 
+            # setup trigger
+            vax_io.out1.period=1000000
+            vax_io.out1.duty_cycle = 500000
+            vax_io.out1.enable = True
+
             # create video; RGB or grayscaled (depends on camera -> current Baumer Camera uses RGB)
             try:
                 self.camera=neoapi.Cam()
-                self.camera.Connect()
+                self.camera.Connect(vax_io._som.camport)
                 if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
                     self.camera.f.PixelFormat.SetString('BGR8')
                     print('BGR8')
@@ -47,7 +53,8 @@ try:
                     print('No supported pixel format')
                     ex(0)
 
-                # setup camera parameters            
+                # setup camera parameters     
+                self.camera.f.TriggerMode.value = neoapi.TriggerMode_On     
                 self.camera.f.ExposureTime.Set(10000)
                 self.camera.f.AcquisitionFrameRateEnable.value = True
                 self.camera.f.AcquisitionFrameRate.value = 10
@@ -80,7 +87,6 @@ try:
             cv2.destroyAllWindows()
             ex(self.result)
             print('System exit')
-
 
         def getImage(self) -> bytes:  
             image = self.camera.GetImage().GetNPArray()
