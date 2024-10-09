@@ -1,0 +1,15 @@
+FWT_3525.pdf
+
+# camera_implementation
+camera_implementation/CNN_classification/variables/
+
+# wear_measurement
+wear_measurement/Datenbasis/
+wear_measurement/Testbilder/
+wear_measurement/__pycache__/
+
+# tool_classification
+tool_classification/CNN_classification_new_Data/variables/
+tool_classification/Datenbasis/
+tool_classification/Test_Images/
+tool_classification/training_1/
