@@ -43,6 +43,9 @@ def alignAll(img: ndarray, projectPath: str, token: str='aligned', saveProgress:
     if saveProgress: saveFrame(pathTarget=imgPath, image=imgAligned, token=token, imgData=False)
     return imgAligned, token
 
+def augmentAll(img: ndarray, masks: ndarray, projectPath: str, token: str='aug', savePrograss: bool=True) -> ndarray:
+    pass
+
 def cropAll(img: ndarray, mask: ndarray, projectPath: str, token: str='cropped', saveProgress: bool=True) -> ndarray:
     ''' Crop stack of images and masks. '''
     img = cropImage(imageData=array(img))

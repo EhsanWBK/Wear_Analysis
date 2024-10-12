@@ -57,16 +57,18 @@ function py_video() {
 		// Starting Video Stream and displaying on Canvas 1 (done in python backend and updateCanvas1())
 		eel.videoFeed()()
 		// Set and disable Buttons
+		document.getElementById('triggerDisp').style.display = 'block';
 		document.getElementById('dataSelection').disabled = true;
 		document.getElementById('dataSelection').style.display = 'none';
 		document.getElementById('imageInput').type = "hidden";
 		document.getElementById('nrEdgesTable').style.display = 'none';
-		if (document.getElementById('singleImage').checked){ document.getElementById('takePicture').style.display = 'block'; } 
+		if (document.getElementById('singleImage').checked){document.getElementById('takePicture').style.display = 'block'; } 
 		else if (document.getElementById('singleImage').checked==false){ document.getElementById('runRoutine').style.display = 'block'; }
 	} 
 	if (document.getElementById('enableCam').checked==false){
 		// Stopping Video Stream
 		eel.stopVideo()()
+		document.getElementById('triggerDisp').style.display = 'none';
 		document.getElementById('dataSelection').disabled = false;
 		document.getElementById('dataSelection').style.display = 'block';
 		document.getElementById('imageInput').type = "text";
@@ -75,6 +77,12 @@ function py_video() {
 		document.getElementById('runRoutine').style.display = 'none';
 		document.getElementById('nrEdgesTable').style.display = 'none';
 	}	
+}
+
+function py_trigger(){
+	if (document.getElementById('enableTrigger').checked==true){
+		eel.setTrigger()()
+	}
 }
 
 function py_foto() { 

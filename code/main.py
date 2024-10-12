@@ -27,6 +27,10 @@ pictureEvent = Event()
 videoEvent = Event()
 stopEvent = Event()
 streamSegEvent = Event()
+triggerEvent = Event()
+
+try: videoCam = VideoCamera()
+except: pass
 
 # Thread 1:
 def startCamera(sharedArray, stopEvent):
@@ -34,7 +38,6 @@ def startCamera(sharedArray, stopEvent):
     global streamFrame
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
-        videoCam = VideoCamera()
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
             streamFrame = sharedArray
@@ -83,6 +86,24 @@ def streamSeg(event, stopEvent):
         event.clear()
     print('Stream Segementation to be terminated.')
 
+# Thread 5:
+def observeTrigger(event, stopEvent):
+    print('\t- Trigger Observation Thread Set Up.')
+    while not stopEvent.is_set():
+        event.wait()
+        if stopEvent.is_set():return
+        print('Start Checking Trigger')
+        while event.is_set() and not stopEvent.is_set():
+            triggerSet, frame = videoCam.checkTrigger()
+            if triggerSet: 
+                blob = reformatFrame(frame=frame)
+                if event.is_set(): eel.updateCanvas2(blob)()
+        print('Stopped Cheking Trigger')
+        event.clear()
+    print('Trigger Observation to be terminated')
+
+
+
 #  =========================================
 #  	       HTML Interface Functions		
 #  =========================================
@@ -114,6 +135,9 @@ def windowClosed():
     sleep(2)
     streamSegEvent.clear()
     print('\t- Video Segmentation Event is cleared.')
+    sleep(2)
+    triggerEvent.clear()
+    print('\t- Trigger Event is cleared.')
     sleep(2)
     print('\t- Set HMTL Close Event')
     htmlClosed.set()
@@ -191,13 +215,19 @@ def saveModel(path):
 
 @eel.expose()
 def videoFeed():
-    videoEvent.set()
+    if videoEvent.set():videoEvent.clear()
+    else: videoEvent.set()
 
 @eel.expose()
 def stopVideo():
     if videoEvent.is_set(): videoEvent.clear()
     if streamSegEvent.is_set(): streamSegEvent.clear()
     else: print('No Video Stream to be stopped.')
+
+@eel.expose()
+def setTrigger():
+    if triggerEvent.set():triggerEvent.clear()
+    else: triggerEvent.set()
 
 @eel.expose()
 def takePicture():
@@ -209,7 +239,7 @@ def takePicture():
 def loadImage(path: str):
     ''' Load image from input path. Path passed from HMTL surface.'''
     global freezeFrame # current... = temporarily stored
-    freezeFrame = imageReader(targetPath=path, segment=True) # single file
+    freezeFrame, fileName = imageReader(targetPath=path, segment=True) # single file
     print('Loading image from directory (with shape): ', freezeFrame.shape)
     transferImage = freezeFrame.copy()
     blob = reformatFrame(transferImage[0])
@@ -243,9 +273,9 @@ def segmentStack(pathProj, nrEdges):
         print('Preprocessing Images for Segmentation') 
         makedirs(pathSeg)
         pathRaw, _ = pathCreator(pathProj, grabData=True)
-        rawImg = imageReader(pathRaw)
+        rawImg, rawFileName = imageReader(pathRaw)
         preProcForSegment(imgArray=rawImg, projectPath=pathProj)
-    imageStack = imageReader(pathSeg, segment=True)
+    imageStack, fileNames = imageReader(pathSeg, segment=True)
     wearCurve = segmentDataStack(imageStack=imageStack, model=currentModel, nrEdges=int(nrEdges), savePath=pathProj)
     blob = reformatFrame(wearCurve)
     eel.updateCanvas2(blob)()
@@ -271,7 +301,10 @@ def setup():
     sleep(1) # give setup some time
     onlineSegThread.start()
     sleep(1)
+    triggerThread.start()
+    sleep(1)
     htmlThread.start()
+
 
 def shutdown():
     print('\n----------------------- SHUTTING DOWN PROGRAM -----------------------')
@@ -287,6 +320,8 @@ def shutdown():
     print('\t- Stopped Video Thread.')
     onlineSegThread.join(timeout=1)
     print('\t- Stopped Online Segmentation Thread.')
+    triggerThread.join(timeout=-1)
+    print('\t- Stopped Trigger Observation Thread.')
     print('\t- Stopped all Threads.')
 
 if __name__ == '__main__':
@@ -298,6 +333,8 @@ if __name__ == '__main__':
     onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
     # Thread 4:
     htmlThread = Thread(target=startHTML)
+    # Thread 5:
+    triggerThread = Thread(target=observeTrigger, args=(triggerEvent, stopEvent))
 
     setup() # setting up system
     htmlClosed.wait()

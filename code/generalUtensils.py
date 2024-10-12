@@ -56,17 +56,19 @@ def imageReader(targetPath: str, segment: bool = False) -> ndarray:
     Path can either specific file or project name. Function reads image from directory.
     The option "segment" tells, if expanded dimensions for the segementation are needed.
     '''
+    fileNames = []
     if isfile(path=str(targetPath)): # if path is file, read and return image
         print('Path is file.\n')
         img = imread(targetPath, 0)
         img = expand_dims(img, 2)
         img = img[:,:,0][:,:,None]
         img = expand_dims(img,0)     
-        return img
+        return img, None
     elif isdir(s=str(targetPath)): # if path is directory, read and return stack of images
         print('Path is Directory.')
         data=[]
-        for img_name in tqdm(listdir(path=targetPath)):
+        for img_name in listdir(path=targetPath):
+            fileNames.append(img_name)
             PATH = join(targetPath, img_name)
             if isfile(PATH):
                 img = imread(PATH,0)
@@ -74,7 +76,7 @@ def imageReader(targetPath: str, segment: bool = False) -> ndarray:
                 data.append(img)
         data = array(data, dtype='float')
         print('Read out data shape: ',data.shape)
-        return data
+        return data, fileNames
 
 def setupFolder(folderPath: str, token: str = None) -> None:
     ''' Sets up folder inside the selected project. 

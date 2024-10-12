@@ -6,14 +6,15 @@ Accessible Functions:
 - onlineSegmentation()
 '''
 
-from numpy import expand_dims, uint8, ndarray, array, zeros_like, max, min
+from numpy import expand_dims, uint8, ndarray, zeros_like
+from generalUtensils import getTimeStamp
 import matplotlib.pyplot as plt
 from random import randint
 from dataPreparation import resizeSingleFrame
-from postProcessing import measurementVB, wearDetectionStack, plotWearCurve
+from postProcessing import measurementVB, wearDetectionStack, plotWearCurve, outlierDetection, plotWearCurveLOWESS
 from sklearn.preprocessing import normalize
 from cv2 import resize, addWeighted, cvtColor, COLOR_BGR2GRAY, imwrite
-from os import getcwd
+from os import makedirs
 from os.path import join
 
 def displayPred(testImg: ndarray, groundTruth: ndarray, pred) -> None:
@@ -47,14 +48,19 @@ def segmentImages(model, testData: dict, randomize: bool = True) -> None:
 def segmentDataStack(imageStack, model, nrEdges, savePath):
     maskStack = []
     print('Image Stack Length: ', len(imageStack))
-    for image in imageStack:
-        pred = predictSingleFrame(image, model)
+    resultFolder = join(savePath, 'results', str(getTimeStamp())) # Define the path to save the CSV file
+    makedirs(resultFolder)
+    predFolder = join(resultFolder,'pred')
+    makedirs(predFolder)
+    for i in range(len(imageStack)):
+        pred = predictSingleFrame(imageStack[i], model)
         maskStack.append(pred)
-        print(max(pred), min(pred))
-    imwrite(join(getcwd(),'test.png'), maskStack[2])
+        imwrite(join(predFolder,'pred_'+str(i)+'.tiff'), pred)
     print('Length Result Array: ',len(maskStack))
-    resultsVBMax, resultFolder, resultFile = wearDetectionStack(dataStack=maskStack, nrEdges=nrEdges, projectPath=savePath)
+    resultsVBMax, resultFolder, resultFile = wearDetectionStack(dataStack=maskStack, nrEdges=nrEdges, resultFolder=resultFolder)
     wearCurve = plotWearCurve(filePath=resultFile, resultFolder=resultFolder)
+    wearCurve = outlierDetection(filePath=resultFile,resultFolder=resultFolder)
+    wearCurve = plotWearCurveLOWESS(filePath=resultFile, resultFolder=resultFolder)
     return wearCurve
 
 def predictSingleFrame(frame: ndarray, model):

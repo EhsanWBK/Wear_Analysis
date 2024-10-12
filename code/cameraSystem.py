@@ -21,6 +21,7 @@ from datetime import datetime
 # from header import cameraConnection # PROBLEM WITH UPDATED STATUS MAYBE
 from base64 import b64decode
 from numpy import uint8, frombuffer
+from time import sleep
 
 cameraConnection = False
 
@@ -51,8 +52,7 @@ try:
                     print('Mono8')
                 else: print('No supported pixel format')
 
-                # setup camera parameters     
-                self.camera.f.TriggerMode.value = neoapi.TriggerMode_On     
+                # setup camera parameters          
                 self.camera.f.ExposureTime.Set(10000)
                 self.camera.f.AcquisitionFrameRateEnable.value = True
                 self.camera.f.AcquisitionFrameRate.value = 10
@@ -72,6 +72,18 @@ try:
                 cv2.imshow(title, self.img)
                 self.video.write(self.img)
                 if cv2.waitKey(1) == 27: break
+
+        def startTrigger(self):
+            self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
+            vax_io.cam_trigger.value = False
+            self.camera.f.LineSelector.value = neoapi.LineSelector_Line1
+            self.camera.f.LineMode.value = neoapi.LineMode_Input
+            self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
+
+        def checkTrigger(self):
+            if self.cam.GetImage().GetNPArray().shape == (0,0,1):
+                return False, None
+            else: return True, self.cam.GetImage().GetNPArray()
             
         def __del__(self):
             self.video.release()
