@@ -11,10 +11,10 @@ from generalUtensils import getTimeStamp
 import matplotlib.pyplot as plt
 from random import randint
 from dataPreparation import resizeSingleFrame
-from postProcessing import measurementVB, wearDetectionStack, plotWearCurve, outlierDetection, plotWearCurveLOWESS
+from postProcessing import measurementVB, writeCSV, plotWearCurve, outlierDetection, plotWearCurveLOWESS
 from sklearn.preprocessing import normalize
-from cv2 import resize, addWeighted, cvtColor, COLOR_BGR2GRAY, imwrite
-from os import makedirs
+from cv2 import resize, addWeighted, cvtColor, COLOR_BGR2GRAY, imwrite, imread, IMREAD_GRAYSCALE
+from os import makedirs, getcwd, listdir
 from os.path import join
 
 def displayPred(testImg: ndarray, groundTruth: ndarray, pred) -> None:
@@ -45,23 +45,42 @@ def segmentImages(model, testData: dict, randomize: bool = True) -> None:
     maxVB = measurementVB(frame=pred)
     print('Maximum VB: ', maxVB)
 
-def segmentDataStack(imageStack, model, nrEdges, savePath):
-    maskStack = []
-    print('Image Stack Length: ', len(imageStack))
+def segmentDataStack(dataPath, model, nrEdges, savePath):
+    imgName = []
+    # print('Image Stack Length: ', len(imageStack))
     resultFolder = join(savePath, 'results', str(getTimeStamp())) # Define the path to save the CSV file
     makedirs(resultFolder)
-    predFolder = join(resultFolder,'pred')
-    makedirs(predFolder)
-    for i in range(len(imageStack)):
-        pred = predictSingleFrame(imageStack[i], model)
-        maskStack.append(pred)
-        imwrite(join(predFolder,'pred_'+str(i)+'.tiff'), pred)
-    print('Length Result Array: ',len(maskStack))
-    resultsVBMax, resultFolder, resultFile = wearDetectionStack(dataStack=maskStack, nrEdges=nrEdges, resultFolder=resultFolder)
+    # predFolder = join(resultFolder,'pred')
+    # makedirs(predFolder)
+    # for i in range(len(imageStack)): 
+    #     pred = predictSingleFrame(imageStack[i], model)
+    #     maskStack.append(pred)
+    #     imwrite(join(predFolder,'pred_'+str(i)+'.tiff'), pred)
+    # print('Length Result Array: ',len(maskStack))
+    resultsVBMax, resultFolder, resultFile = wearDetectionStack(dataPath=dataPath, model=model, nrEdges=nrEdges, resultFolder=resultFolder)
     wearCurve = plotWearCurve(filePath=resultFile, resultFolder=resultFolder)
     wearCurve = outlierDetection(filePath=resultFile,resultFolder=resultFolder)
     wearCurve = plotWearCurveLOWESS(filePath=resultFile, resultFolder=resultFolder)
     return wearCurve
+
+def wearDetectionStack(dataPath, model, nrEdges, resultFolder):
+    ''' Takes in array of masks. '''
+    resultsVBMax = []
+    imgName = []
+    fitFolder = join(resultFolder, 'fit')
+    makedirs(fitFolder)
+    predFolder = join(resultFolder,'pred')
+    makedirs(predFolder)
+    print('Estimate maximum VB')
+    for filename in listdir(dataPath):
+        imgName.append(filename)
+        img = imread(join(dataPath, filename), IMREAD_GRAYSCALE)
+        pred = predictSingleFrame(img, model)
+        imwrite(join(predFolder,'pred_'+filename+'.tiff'), pred)
+        sampleVBMax = measurementVB(frame=pred, saveFolder=resultFolder, filename=filename)
+        resultsVBMax.append(sampleVBMax)
+    resultFolder, resultFile = writeCSV(resultsVBMax=resultsVBMax, resultFolder=resultFolder)
+    return resultsVBMax, resultFolder, resultFile
 
 def predictSingleFrame(frame: ndarray, model):
     if len(frame.shape) > 2: frame = resize(frame, (frame.shape[0], frame.shape[1]))
@@ -78,7 +97,7 @@ def singleImageSegmentation(image: ndarray, model) -> ndarray:
     print('Segmenting Image. This might take a while.') # implement tqdm or something else to track segmenting process
     imageResized = resizeSingleFrame(frame=image, aspectRatio=(512,512))
     mask = predictSingleFrame(frame=imageResized, model=model)
-    maxVB = measurementVB(frame=mask)
+    maxVB = measurementVB(frame=mask, saveFolder=join(getcwd(), 'results'))
     print('Maximum VB: ', maxVB)
     return mask, maxVB
 

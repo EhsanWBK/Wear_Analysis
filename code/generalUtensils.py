@@ -68,7 +68,8 @@ def imageReader(targetPath: str, segment: bool = False) -> ndarray:
         print('Path is Directory.')
         data=[]
         for img_name in listdir(path=targetPath):
-            fileNames.append(img_name)
+            name = splitext(img_name)[0]
+            fileNames.append(name)
             PATH = join(targetPath, img_name)
             if isfile(PATH):
                 img = imread(PATH,0)
@@ -97,7 +98,7 @@ def setupFolder(folderPath: str, token: str = None) -> None:
         try: mkdir(path=path_dir, mode=777)
         except Exception as e:  print(f'Error creating new folder: {e}')
         
-def saveFrame(pathTarget: str, image, token: str, maskConversion: bool = False) -> None:
+def saveFrame(pathTarget: str, image, token: str, names=['test'], maskConversion: bool = False) -> None:
     ''' Target path is either image or mask path. Also the image data and the folder name
     under which the images are saved in. The folder will be created from scratch.'''
     suffix = PNG_SUFFIX
@@ -105,8 +106,7 @@ def saveFrame(pathTarget: str, image, token: str, maskConversion: bool = False) 
     print('\nSAVING IMAGES at: ', pathTarget,token)
     print('Saving Image Type:\t', suffix)
     for imgEntry in range(len(image)):
-        imgName = str(imgEntry)
-        filename=join(pathTarget, token, token+imgName+suffix)
+        filename=join(pathTarget, token, token+'_'+str(names[imgEntry])+suffix)
         imwrite(filename, image[imgEntry]) # edit function
     if maskConversion:  convertMaskFileType(projectPath=pathTarget, token=token)
 

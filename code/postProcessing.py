@@ -21,7 +21,7 @@ from sklearn.cluster import DBSCAN
 from statsmodels.nonparametric.smoothers_lowess import lowess
 
 
-def measurementVB(frame: ndarray, saveFolder:str) -> list:
+def measurementVB(frame: ndarray, saveFolder:str, filename:str = 'test') -> list:
     ''' Take in predicted mask. Find contours and draw box around them to highlight region of interest (roi).
     Align mask pixels to box edge and calcuate distances to the edge.
     Create list of all distances. Accumulated these distances create the Width of Flank Wear Land VB.
@@ -77,7 +77,7 @@ def measurementVB(frame: ndarray, saveFolder:str) -> list:
             y, min_x, max_x, difference = entry
         Dis = [sublist[3] for sublist in min_max_list]
         VBmax_AX.append(round(float(max(Dis)) * 1.725, 2))
-    output_path_fit = join(saveFolder, 'fit' ,str(getTimeStamp())+"_fit.png")
+    output_path_fit = join(saveFolder, 'fit' ,'fit_'+filename+".png")
     cv2.imwrite(output_path_fit, fitImg[VBmax_AX.index(max(VBmax_AX))])
     print('VB max: ',VBmax_AX)
     return max(VBmax_AX)
@@ -92,18 +92,6 @@ def getCountourIndices(contours):
                     break  # Exit the inner loop once condition is met for this contour
     return valid_indices
 
-def wearDetectionStack(dataStack, nrEdges, resultFolder):
-    ''' Takes in array of masks. '''
-    resultsVBMax = []
-    fitFolder = join(resultFolder, 'fit')
-    makedirs(fitFolder)
-    print('Estimate maximum VB')
-    for idx in range(len(dataStack)):
-        sampleVBMax = measurementVB(frame=dataStack[idx], saveFolder=resultFolder)
-        resultsVBMax.append(sampleVBMax)
-    print('Result VBmax: ',resultsVBMax)
-    resultFolder, resultFile = writeCSV(resultsVBMax=resultsVBMax, resultFolder=resultFolder)
-    return resultsVBMax, resultFolder, resultFile
 
 def writeCSV(resultsVBMax, resultFolder):
     header = ['Tooth'] + [f"{i+1}_Track" for i in range(len(resultsVBMax)//4)]

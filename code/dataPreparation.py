@@ -106,7 +106,7 @@ def preProcFromCamera(frame: ndarray, aspectRatio: tuple = (512,512), channel: i
     frameResize = resizeSingleFrame(frame=frameCrop, aspectRatio=aspectRatio, channel=channel)
     return frameResize
 
-def preProcForSegment(imgArray: ndarray, projectPath: str, aspectRatio = (512,512), channel: int = 1) -> None:
+def preProcForSegment(imgArray: ndarray, projectPath: str, fileNames:list, aspectRatio = (512,512), channel: int = 1) -> None:
     ''' Takes in an array from the data storage and saves a subfolder 'segmentation' with pre-processed images.'''
     imgPath, maskPath = pathCreator(projectPath=projectPath)
     segmentImg = []
@@ -114,7 +114,7 @@ def preProcForSegment(imgArray: ndarray, projectPath: str, aspectRatio = (512,51
         upscaledFrame = resize(img, (2048,2448), interpolation=INTER_LINEAR)
         segmentFrame = preProcFromCamera(frame=upscaledFrame, aspectRatio=aspectRatio, channel=channel)
         segmentImg.append(segmentFrame)
-    saveFrame(pathTarget=imgPath, image=segmentImg, token='seg')
+    saveFrame(pathTarget=imgPath, image=segmentImg, names=fileNames, token='seg')
     print('Saved all images')
 
 
