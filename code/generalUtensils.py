@@ -98,10 +98,9 @@ def setupFolder(folderPath: str, token: str = None) -> None:
         try: mkdir(path=path_dir, mode=777)
         except Exception as e:  print(f'Error creating new folder: {e}')
         
-def saveFrame(pathTarget: str, image, token: str, names=['test'], maskConversion: bool = False) -> None:
+def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConversion: bool=False, suffix: str=PNG_SUFFIX) -> None:
     ''' Target path is either image or mask path. Also the image data and the folder name
     under which the images are saved in. The folder will be created from scratch.'''
-    suffix = PNG_SUFFIX
     setupFolder(folderPath=pathTarget, token=token)
     print('\nSAVING IMAGES at: ', pathTarget,token)
     print('Saving Image Type:\t', suffix)
@@ -158,10 +157,10 @@ def setupData(projectPath: str, par: dict = None, split: bool = True, token: str
     If False returns image and mask data instead. '''
     imgPath, maskPath = pathCreator(projectPath=projectPath, grabData=True, token=token)
     if token == 'final': maskPath= join(projectPath, 'masks', 'final_tif')
-    try:images = imageReader(imgPath)
-    except:images = []
-    try: masks = imageReader(maskPath)
-    except:masks = []
+    images, imageNames = imageReader(imgPath)
+    # except:images = []
+    masks, maskNames = imageReader(maskPath)
+    # except:masks, maskNames = []
 
     if split:
         xTrain, xTest, yTrain, yTest = train_test_split(images, masks, test_size=float(par['validationSize']), random_state=int(par['randomState']), shuffle=bool(par['randomSelection']))
@@ -174,4 +173,4 @@ def setupData(projectPath: str, par: dict = None, split: bool = True, token: str
         return data
     else: 
         print('\nPrepared data without splitting: Image Data of Shape ', images.shape, ' and Mask Data of Shape ', masks.shape)
-        return images, masks
+        return images, masks, imageNames, maskNames

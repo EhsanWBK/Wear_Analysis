@@ -79,6 +79,7 @@ def wearDetectionStack(dataPath, model, nrEdges, resultFolder):
         imwrite(join(predFolder,'pred_'+filename+'.tiff'), pred)
         sampleVBMax = measurementVB(frame=pred, saveFolder=resultFolder, filename=filename)
         resultsVBMax.append(sampleVBMax)
+        print('\nFilename: ', filename, '\nVB max: ',sampleVBMax)
     resultFolder, resultFile = writeCSV(resultsVBMax=resultsVBMax, resultFolder=resultFolder)
     return resultsVBMax, resultFolder, resultFile
 

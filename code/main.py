@@ -2,7 +2,7 @@ import eel
 from tkinter import Tk, filedialog
 from time import sleep
 from datetime import datetime
-from os import makedirs
+from os import makedirs, getcwd
 from os.path import join, exists
 from sys import exit
 from threading import Event, Thread
@@ -17,6 +17,7 @@ from modelTraining import trainCurModel, saveHistory
 from header import *
 
 currentFrame = None
+blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
 
 #  =========================================
 #  	         Multithreading	Setup
@@ -52,7 +53,8 @@ def streamVid(event, stopEvent):
         print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
-            print(streamFrame.shape)
+            try: print(streamFrame.shape)
+            except: streamFrame = blankFrame
             blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
@@ -101,8 +103,6 @@ def observeTrigger(event, stopEvent):
         print('Stopped Cheking Trigger')
         event.clear()
     print('Trigger Observation to be terminated')
-
-
 
 #  =========================================
 #  	       HTML Interface Functions		
@@ -274,7 +274,7 @@ def segmentStack(pathProj, nrEdges):
         makedirs(pathSeg)
         pathRaw, _ = pathCreator(pathProj, grabData=True)
         rawImg, rawFileName = imageReader(pathRaw)
-        preProcForSegment(imgArray=rawImg, projectPath=pathProj, fileNames=rawFileName)
+        preProcForSegment(imgArray=rawImg, projectPath=pathProj, fileNames=[rawFileName])
     # imageStack, fileNames = imageReader(pathSeg, segment=True)
     wearCurve = segmentDataStack(dataPath=pathSeg, model=currentModel, nrEdges=int(nrEdges), savePath=pathProj)
     blob = reformatFrame(wearCurve)

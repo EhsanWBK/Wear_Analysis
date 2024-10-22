@@ -12,7 +12,6 @@ from generalUtensils import setupData, getTimeStamp
 from header import CWD
 
 from keras.models import Model
-from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
 from os.path import join
 from tensorboard import program
@@ -69,54 +68,14 @@ def trainCurModel(par: dict) -> Model:
 
     x ,y, _ = resizeAll(img=trainData['xTrain'], aspectRatio=aspectRatio, mask=trainData['yTrain']/255.0, saveProgress=False)
     print('Input Shape: ', x.shape)
-    if augmentation: model, history = augementImage(model=model, trainData=trainData, par=par, callbacks=callbacks)
-    else: history = model.fit(x=x, y=y, batch_size=batch_size, epochs=epochs, validation_data=(trainData['xTest'], trainData['yTest']), 
+    # if augmentation: model, history = augementImage(model=model, trainData=trainData, par=par, callbacks=callbacks)
+    # else: 
+    history = model.fit(x=x, y=y, batch_size=batch_size, epochs=epochs, validation_data=(trainData['xTest'], trainData['yTest']), 
                             shuffle=shuffle, callbacks=callbacks, verbose = True)
 
     print('Model Training Finished successfully.')
     return model, history
 
-def augementImage(model: Model, trainData: dict, par: dict, callbacks: list):
-    ''' Takes in Training Data Set and returns Image and Mask Data Generator. '''
-    shuffle = bool(par['randomSelection'])
-    seed = int(par['randomState'])
-
-    arguments = {
-        'rotation_range':       int(par['rotationRange']),
-        'width_shift_range':    float(par['widthShiftRange']),
-        'height_shift_range':   float(par['heigthShiftRange']),
-        'zoom_range':           float(par['zoomRange']),
-        'horizontal_flip':      bool(par['horizontalFlip']),
-        'vertical_flip':        bool(par['verticalFlip']),
-        'validation_split':     float(par['validationSize'])
-    }
-
-    datagenImage = ImageDataGenerator(**arguments)
-    datagenMask = ImageDataGenerator(**arguments)
-
-    xTrain ,yTrain, _ = resizeAll(img=trainData['xTrain'], aspectRatio=aspectRatio, mask=trainData['yTrain'], saveProgress=False)
-    xTest ,yTest, _ = resizeAll(img=trainData['xTest'], aspectRatio=aspectRatio, mask=trainData['yTest'], saveProgress=False)
-
-    xTrain = expand_dims(xTrain, axis=-1)
-    yTrain = expand_dims(yTrain, axis=-1)
-    xTest = expand_dims(xTest, axis=-1)
-    yTest = expand_dims(yTest, axis=-1)
-    
-    imageGenTrain = datagenImage.flow(x=xTrain, batch_size=batch_size, shuffle=shuffle, seed=seed,
-        subset='training'
-    )
-    maskGenTrain = datagenMask.flow(x=yTrain, batch_size=batch_size, shuffle=shuffle, seed=seed,
-        subset='training'
-    )
-    imageGenVal = datagenImage.flow(x=xTest, batch_size=batch_size, shuffle=shuffle, seed=seed,
-        subset='validation'
-    )
-    maskGenVal = datagenMask.flow(x=yTest, batch_size=batch_size, shuffle=shuffle, seed=seed,
-        subset='validation'
-    )
-
-    history = model.fit(zip(imageGenTrain, maskGenTrain), validation_data=zip(imageGenVal, maskGenVal), epochs = epochs, callbacks = callbacks, verbose=True )
-    return model, history
 
 # ======== Model Training Evaluation ========
 
