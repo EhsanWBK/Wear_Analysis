@@ -74,13 +74,11 @@ try:
                 if cv2.waitKey(1) == 27: break
 
         def startTrigger(self):
-            self.__del__()
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
             vax_io.cam_trigger.value = False
             self.camera.f.LineSelector.value = neoapi.LineSelector_Line1
             self.camera.f.LineMode.value = neoapi.LineMode_Input
             self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
-            self.start_cam()
 
         def checkTrigger(self):
             print(self.camera.GetImage().GetNPArray().shape)
