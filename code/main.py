@@ -17,7 +17,7 @@ from modelTraining import trainCurModel, saveHistory
 from header import *
 
 currentFrame = None
-blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
+# blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
 
 #  =========================================
 #  	         Multithreading	Setup
@@ -102,7 +102,7 @@ def observeTrigger(event, stopEvent):
                 if event.is_set(): eel.updateCanvas2(blob)()
         print('Stopped Cheking Trigger')
         event.clear()
-        
+
     print('Trigger Observation to be terminated')
 
 #  =========================================
