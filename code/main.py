@@ -102,6 +102,7 @@ def observeTrigger(event, stopEvent):
         while event.is_set() and not stopEvent.is_set():
             triggerSet, frame = videoCam.checkTrigger()
             if triggerSet: 
+                print('Trigger set.')
                 blob = frame
                 if event.is_set(): eel.updateCanvas2(blob)()
         print('Stopped Cheking Trigger')
