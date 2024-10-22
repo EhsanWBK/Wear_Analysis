@@ -56,6 +56,7 @@ try:
                 self.camera.f.ExposureTime.Set(10000)
                 self.camera.f.AcquisitionFrameRateEnable.value = True
                 self.camera.f.AcquisitionFrameRate.value = 10
+                self.startTrigger()
                 self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
                                     (self.camera.f.Width.value, self.camera.f.Height.value), isColor)
                 print('Video Created')
