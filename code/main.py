@@ -98,6 +98,7 @@ def observeTrigger(event, stopEvent):
         event.wait()
         if stopEvent.is_set():return
         print('Start Checking Trigger')
+        videoCam.startTrigger()
         while event.is_set() and not stopEvent.is_set():
             triggerSet, frame = videoCam.checkTrigger()
             if triggerSet: 
