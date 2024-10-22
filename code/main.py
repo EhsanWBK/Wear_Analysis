@@ -30,6 +30,10 @@ stopEvent = Event()
 streamSegEvent = Event()
 triggerEvent = Event()
 
+try: 
+    videoCam = VideoCamera()
+    streamFrame = videoCam.getImage()
+except: pass
 
 
 # Thread 1:
@@ -38,8 +42,7 @@ def startCamera(sharedArray, stopEvent):
     global streamFrame
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
-        try: videoCam = VideoCamera()
-        except: pass
+        
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
             streamFrame = sharedArray
