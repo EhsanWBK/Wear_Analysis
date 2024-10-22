@@ -81,7 +81,6 @@ try:
             self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
 
         def checkTrigger(self):
-            print(self.camera.GetImage().GetNPArray().shape)
             if self.camera.GetImage().GetNPArray().shape == (0,0,1):
                 return False, None
             else: return True, self.camera.GetImage().GetNPArray()
@@ -95,6 +94,7 @@ try:
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
             print(type(self.img))
+            print(self.img)
             ret, jpeg = cv2.imencode('.jpg', self.img)
             jpegString = b64encode(jpeg).decode('utf-8')
             return jpegString
