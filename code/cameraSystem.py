@@ -19,7 +19,7 @@ from os import getcwd
 from os.path import join
 from datetime import datetime
 # from header import cameraConnection # PROBLEM WITH UPDATED STATUS MAYBE
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from numpy import uint8, frombuffer
 from time import sleep
 
@@ -92,11 +92,10 @@ try:
             print('System exit')
 
         def getImage(self) -> bytes:  
-            image = self.camera.GetImage().GetNPArray()
-            jpeg = b64decode(image)
-            jpegNp = cv2.frombuffer(jpeg, dtype=uint8)
-            self.img = cv2.imdecode(jpegNp, flags=1)
-            return self.img
+            self.img = self.camera.GetImage().GetNPArray()
+            ret, jpeg = cv2.imencode('.jpg', self.img)
+            jpegString = b64encode(jpeg).decode('utf-8')
+            return jpegString
         
         def save_frame (self):
             print('Saving the image')
