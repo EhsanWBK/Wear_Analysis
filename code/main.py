@@ -30,10 +30,9 @@ stopEvent = Event()
 streamSegEvent = Event()
 triggerEvent = Event()
 
-try: 
-    videoCam = VideoCamera()
-    streamFrame = videoCam.getImage()
-except: pass
+
+videoCam = VideoCamera()
+streamFrame = videoCam.getImage()
 
 
 # Thread 1:
