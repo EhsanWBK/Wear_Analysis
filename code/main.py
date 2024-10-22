@@ -53,8 +53,8 @@ def streamVid(event, stopEvent):
         print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
-            try: print(streamFrame.shape)
-            except: streamFrame = blankFrame
+            # try: print(streamFrame.shape)
+            # except: streamFrame = blankFrame
             blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
