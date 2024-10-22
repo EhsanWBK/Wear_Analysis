@@ -93,6 +93,7 @@ try:
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
+            print(type(self.img))
             ret, jpeg = cv2.imencode('.jpg', self.img)
             jpegString = b64encode(jpeg).decode('utf-8')
             return jpegString
