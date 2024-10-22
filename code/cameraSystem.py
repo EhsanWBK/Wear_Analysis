@@ -81,9 +81,9 @@ try:
             self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
 
         def checkTrigger(self):
-            if self.cam.GetImage().GetNPArray().shape == (0,0,1):
+            if self.camera.GetImage().GetNPArray().shape == (0,0,1):
                 return False, None
-            else: return True, self.cam.GetImage().GetNPArray()
+            else: return True, self.camera.GetImage().GetNPArray()
             
         def __del__(self):
             self.video.release()
