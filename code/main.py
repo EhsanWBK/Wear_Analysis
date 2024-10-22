@@ -102,6 +102,7 @@ def observeTrigger(event, stopEvent):
                 if event.is_set(): eel.updateCanvas2(blob)()
         print('Stopped Cheking Trigger')
         event.clear()
+        
     print('Trigger Observation to be terminated')
 
 #  =========================================
