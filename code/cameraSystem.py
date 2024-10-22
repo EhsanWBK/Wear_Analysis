@@ -81,6 +81,7 @@ try:
             self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
 
         def checkTrigger(self):
+            print(self.camera.GetImage().GetNPArray().shape)
             if self.camera.GetImage().GetNPArray().shape == (0,0,1):
                 return False, None
             else: return True, self.camera.GetImage().GetNPArray()
