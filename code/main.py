@@ -30,8 +30,7 @@ stopEvent = Event()
 streamSegEvent = Event()
 triggerEvent = Event()
 
-try: videoCam = VideoCamera()
-except: pass
+
 
 # Thread 1:
 def startCamera(sharedArray, stopEvent):
@@ -39,6 +38,8 @@ def startCamera(sharedArray, stopEvent):
     global streamFrame
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
+        try: videoCam = VideoCamera()
+        except: pass
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
             streamFrame = sharedArray
@@ -46,6 +47,7 @@ def startCamera(sharedArray, stopEvent):
 
 # Thread 2:
 def streamVid(event, stopEvent):
+    global streamFrame
     print('\t- Video Thread Set Up.')
     while not stopEvent.is_set():
         event.wait()
@@ -53,8 +55,6 @@ def streamVid(event, stopEvent):
         print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
-            # try: print(streamFrame.shape)
-            # except: streamFrame = blankFrame
             blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
