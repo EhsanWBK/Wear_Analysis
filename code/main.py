@@ -45,7 +45,7 @@ def startCamera(sharedArray, stopEvent):
     finally: videoCam.stopClient()
 
 # Thread 2:
-def streamVid(sharedArray, event, stopEvent):
+def streamVid(event, stopEvent):
     print('\t- Video Thread Set Up.')
     while not stopEvent.is_set():
         event.wait()
@@ -53,7 +53,7 @@ def streamVid(sharedArray, event, stopEvent):
         print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
-            blob = sharedArray
+            blob = streamFrame
             print(np.max(blob))
             # blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
@@ -336,7 +336,7 @@ if __name__ == '__main__':
     # Thread 1: 
     pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
     # Thread 2:
-    videoThread = Thread(target=streamVid, args=(IMG_ARRAY, videoEvent, stopEvent))
+    videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent))
     # Thread 3:
     onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
     # Thread 4:
