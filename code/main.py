@@ -335,15 +335,16 @@ def shutdown():
 
 if __name__ == '__main__':
     # Thread 1: 
-    pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
-    sleep(2)
+    cameraThread = Thread(target=startCamera, args=(IMG_ARRAY, stopEvent))
     # Thread 2:
-    videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent))
+    pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
     # Thread 3:
-    onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
+    videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent))
     # Thread 4:
-    htmlThread = Thread(target=startHTML)
+    onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
     # Thread 5:
+    htmlThread = Thread(target=startHTML)
+    # Thread 6:
     triggerThread = Thread(target=observeTrigger, args=(triggerEvent, stopEvent))
 
     setup() # setting up system
