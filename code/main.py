@@ -335,6 +335,7 @@ def shutdown():
 if __name__ == '__main__':
     # Thread 1: 
     pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
+    sleep(2)
     # Thread 2:
     videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent))
     # Thread 3:
