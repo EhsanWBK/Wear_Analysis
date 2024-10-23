@@ -80,9 +80,10 @@ function py_video() {
 }
 
 function py_trigger(){
-	if (document.getElementById('enableTrigger').checked==true){
-		eel.setTrigger()()
-	}
+	// if (document.getElementById('enableTrigger').checked==true){
+	// 	eel.setTrigger()()
+	// }
+	eel.setTrigger()()
 }
 
 function py_foto() { 

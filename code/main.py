@@ -227,8 +227,12 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.set():triggerEvent.clear()
-    else: triggerEvent.set()
+    if triggerEvent.set():
+        print('Stopping Trigger')
+        triggerEvent.clear()
+    else: 
+        print('Start Trigger')
+        triggerEvent.set()
 
 @eel.expose()
 def takePicture():
