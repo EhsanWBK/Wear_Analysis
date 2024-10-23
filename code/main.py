@@ -17,7 +17,7 @@ from cameraSystem import VideoCamera
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
-currentFrame = None
+streamFrame = None
 # blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
 
 #  =========================================
