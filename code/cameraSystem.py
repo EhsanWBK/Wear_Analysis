@@ -50,9 +50,7 @@ try:
                     self.camera.f.PixelFormat.SetString('Mono8')
                     isColor = False
                     print('Mono8')
-                else: print('No supported pixel format')
-
-                # setup camera parameters          
+                else: print('No supported pixel format')        
                 self.camera.f.ExposureTime.Set(10000)
                 self.camera.f.AcquisitionFrameRateEnable.value = True
                 self.camera.f.AcquisitionFrameRate.value = 10
@@ -80,9 +78,11 @@ try:
             self.camera.f.LineMode.value = neoapi.LineMode_Input
             self.camera.f.TriggerSource.value = neoapi.TriggerSource_Line1
 
+        def stopTrigger(self):
+            self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
+
         def checkTrigger(self):
-            if self.camera.GetImage().GetNPArray().shape == (0,0,1):
-                return False, None
+            if self.camera.GetImage().GetNPArray().shape == (0,0,1): return False, None
             else: return True, self.camera.GetImage().GetNPArray()
             
         def __del__(self):
