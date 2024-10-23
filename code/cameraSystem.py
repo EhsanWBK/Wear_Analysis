@@ -93,11 +93,11 @@ try:
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
-            print(type(self.img))
-            print(self.img)
-            ret, jpeg = cv2.imencode('.jpg', self.img)
-            jpegString = b64encode(jpeg).decode('utf-8')
-            return jpegString
+            # print(type(self.img))
+            return self.img        
+            # ret, jpeg = cv2.imencode('.jpg', self.img)
+            # jpegString = b64encode(jpeg).decode('utf-8')
+            # return jpegString
         
         def save_frame (self):
             print('Saving the image')
