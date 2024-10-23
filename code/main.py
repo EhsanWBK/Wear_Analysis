@@ -40,6 +40,7 @@ def startCamera(sharedArray, stopEvent):
     try:
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
+            print(sharedArray.shape)
             streamFrame = sharedArray
     finally: videoCam.stopClient()
 
@@ -53,6 +54,7 @@ def streamVid(sharedArray, event, stopEvent):
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
             blob = sharedArray
+            print(blob.shape)
             # blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
