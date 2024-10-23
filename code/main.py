@@ -305,6 +305,8 @@ def segmentVideo():
 
 def setup():
     print('\n----------------------- STARTING THREADS -----------------------')
+    cameraThread.start()
+    sleep(1)
     pictureThread.start()
     sleep(1)
     videoThread.start()
@@ -324,6 +326,7 @@ def shutdown():
     triggerEvent.set()
     print('\t- Released Video Event.')
     pictureEvent.set()
+    cameraThread.join(timeout=1)
     print('\t- Released Picture Event.')
     pictureThread.join(timeout=1)
     print('\t- Stopped Picture Thread.')
