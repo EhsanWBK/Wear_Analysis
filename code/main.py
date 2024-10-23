@@ -42,6 +42,7 @@ def startCamera(sharedArray, stopEvent):
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
             streamFrame = sharedArray
+            print(np.max(streamFrame))
     finally: videoCam.stopClient()
 
 # Thread 2:
