@@ -17,7 +17,7 @@ from cameraSystem import VideoCamera
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
-streamFrame = None
+currentFrame = None
 # blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
 
 #  =========================================
@@ -37,13 +37,15 @@ videoCam = VideoCamera()
 def startCamera(sharedArray, stopEvent):
     ''' Starting the OPC UA Client for the Camera.'''
     global streamFrame
-    print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
+    print('\n----------------------- STARTING CAMERA -----------------------')
     try:
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
             streamFrame = sharedArray
             print(np.max(streamFrame))
-    finally: videoCam.stopClient()
+    finally: 
+        print('Problem Starting Camera')
+        videoCam.stopClient()
 
 # Thread 2:
 def streamVid(event, stopEvent):
