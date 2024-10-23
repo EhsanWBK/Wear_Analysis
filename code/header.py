@@ -31,6 +31,7 @@ VAL_DATA = []
 
 IMG_SHAPE = (2048, 2448, 3)
 IMG_ARRAY = zeros(IMG_SHAPE, dtype=uint8)
+IMG_ARRAY.fill(255)
  
 # ======== Saving Settings ========
 

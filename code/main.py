@@ -40,7 +40,6 @@ def startCamera(sharedArray, stopEvent):
     try:
         while not stopEvent.is_set(): 
             sharedArray[:] = videoCam.getImage()
-            print(sharedArray.shape)
             streamFrame = sharedArray
     finally: videoCam.stopClient()
 
