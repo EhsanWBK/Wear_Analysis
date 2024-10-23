@@ -5,6 +5,7 @@ Also mimicking HTML interface while not connected.
 '''
 from os import getcwd, chdir
 from os.path import join, dirname
+import numpy as np
 from numpy import zeros, uint8
 
 chdir(dirname(getcwd())) # move out of 'code' directory
@@ -32,7 +33,7 @@ VAL_DATA = []
 IMG_SHAPE = (2048, 2448, 3)
 IMG_ARRAY = zeros(IMG_SHAPE, dtype=uint8)
 IMG_ARRAY.fill(255)
-print('MAX IMG ARRAY: ', max(IMG_ARRAY))
+print('MAX IMG ARRAY: ', np.max(IMG_ARRAY))
  
 # ======== Saving Settings ========
 

@@ -8,6 +8,7 @@ from sys import exit
 from threading import Event, Thread
 from matplotlib import pyplot as plt
 from cv2 import imwrite
+import numpy as np
 
 from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
@@ -53,7 +54,7 @@ def streamVid(sharedArray, event, stopEvent):
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
             blob = sharedArray
-            print(max(blob))
+            print(np.max(blob))
             # blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
