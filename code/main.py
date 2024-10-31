@@ -43,7 +43,7 @@ def startCamera(sharedArray, stopEvent):
             streamFrame = sharedArray
     finally: 
         print('Problem Starting Camera')
-        videoCam.stopClient()
+        videoCam.stop_cam()
 
 # Thread 2:
 def streamVid(event, stopEvent):

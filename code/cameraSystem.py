@@ -71,6 +71,10 @@ try:
                 self.video.write(self.img)
                 if cv2.waitKey(1) == 27: break
 
+        def stop_cam(self):
+            print('Stopping Cmaera')
+            self.video.release()
+
         def startTrigger(self):
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
             vax_io.cam_trigger.value = False
