@@ -2,7 +2,7 @@ import eel
 from tkinter import Tk, filedialog
 from time import sleep
 from datetime import datetime
-from os import makedirs, getcwd
+from os import makedirs
 from os.path import join, exists
 from sys import exit
 from threading import Event, Thread
@@ -12,13 +12,12 @@ import numpy as np
 
 from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
-from segmentation import singleImageSegmentation, videoSegmentation, predictSingleFrame, segmentDataStack
+from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
 from cameraSystem import VideoCamera
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
 streamFrame = None
-# blankFrame, a = imageReader(targetPath=r"C:\Users\flohg\Desktop\Hiwi_WBK\01_Branches_Ehsan\Wear_Analysis\example_images\image0000417_cropped.jpg")
 
 #  =========================================
 #  	         Multithreading	Setup
