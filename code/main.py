@@ -37,13 +37,13 @@ def startCamera(sharedArray, stopEvent):
     ''' Starting the OPC UA Client for the Camera.'''
     global streamFrame
     print('\n----------------------- STARTING CAMERA -----------------------')
-    try:
-        while not stopEvent.is_set(): 
-            sharedArray[:] = videoCam.getImage()
-            streamFrame = sharedArray
-    finally: 
-        print('Problem Starting Camera')
-        videoCam.stop_cam()
+    # try:
+    while not stopEvent.is_set(): 
+        sharedArray[:] = videoCam.getImage()
+        streamFrame = sharedArray
+    # finally: 
+    #     print('Problem Starting Camera')
+    #     videoCam.stop_cam()
 
 # Thread 2:
 def streamVid(event, stopEvent):
