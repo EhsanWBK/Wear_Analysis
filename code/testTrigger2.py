@@ -110,26 +110,26 @@ def test5():
     streamThread.join()
     triggerThread.join()
 
-test3()
+# test3()
 
-# videoStop = th.Event()
+videoStop = th.Event()
+baumer = Camera()
 
+class DummyObj():
+    def __init__(self) -> None:
+        pass
 
-# class DummyObj():
-#     def __init__(self) -> None:
-#         pass
+    def printA(self):
+        while not videoStop.is_set():
+            sleep(1)
+            img = baumer.displayImage()          
 
-#     def printA(self):
-#         while not videoStop.is_set():
-#             sleep(1)
-#             print('a')
-
-#     def printB(self):
-#         for i in range(10):
-#             sleep(1)
-#             print('b')
-#         videoStop.set()
-#         print('Interrupting Thread')
+    def printB(self):
+        for i in range(10):
+            sleep(1)
+            print('b')
+        videoStop.set()
+        print('Interrupting Thread')
 
 
 # dummy = DummyObj()
