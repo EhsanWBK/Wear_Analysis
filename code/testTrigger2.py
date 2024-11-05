@@ -33,15 +33,15 @@ class Camera(object):
             print('Mono8')
         # self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
         #                             (self.cam.f.Width.value, self.cam.f.Height.value), isColor)
-        for cnt in range(0,200):
-                self.img = self.cam.GetImage().GetNPArray()
-                # title = 'press ESC to exit ..'
-                # cv2.namedWindow(title, cv2.WINDOW_NORMAL)
-                # cv2.imshow(title, self.img)
-                # self.video.write(self.img)
-                # if cv2.waitKey(1) == 27: break
-                print(self.img.shape)
-                sleep(0.5)
+        # for cnt in range(0,200):
+        #         self.img = self.cam.GetImage().GetNPArray()
+        #         # title = 'press ESC to exit ..'
+        #         # cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+        #         # cv2.imshow(title, self.img)
+        #         # self.video.write(self.img)
+        #         # if cv2.waitKey(1) == 27: break
+        #         print(self.img.shape)
+        #         sleep(0.5)
 
 
     def startTrigger(self):
@@ -148,7 +148,7 @@ class DummyObj():
 
     def printA(self):
         baumer.startCam()
-        for i in range(30) and not videoStop.is_set():
+        for i in range(30):# and not videoStop.is_set():
             sleep(1)
             img = baumer.displayImage()          
 
