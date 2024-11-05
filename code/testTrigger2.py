@@ -70,7 +70,11 @@ class Camera(object):
         self.img = self.cam.GetImage().GetNPArray()
         print(self.img.shape)
         # print(self.img)
-        return self.img
+        return self.img#
+
+    def stopTrigger(self):
+        self.cam.f.TriggerMode.value = neoapi.TriggerMode_Off
+
 
 def test1():
     ''' Test Setup of the Camera. '''
@@ -125,11 +129,15 @@ class DummyObj():
             img = baumer.displayImage()          
 
     def printB(self):
-        for i in range(10):
+        for i in range(2):
             sleep(1)
             print('b')
-        videoStop.set()
         print('Interrupting Thread')
+        videoStop.set()
+        print('Stopping Trigger')
+        baumer.stopTrigger()
+        baumer.displayImage()
+        
 
 
 dummy = DummyObj()
