@@ -28,52 +28,27 @@ cameraConnection = False
 try:
     import neoapi
     import vax_io
+
     class VideoCamera(object):
         def __init__(self):
-            self.video_path = join(getcwd(),'temp','video_temp.avi')
-            self.result = 0
-            isColor = True
-
-            # setup trigger
+            # setup 
             vax_io.out1.period=1000000
             vax_io.out1.duty_cycle = 500000
             vax_io.out1.enable = True
 
-            # create video; RGB or grayscaled (depends on camera -> current Baumer Camera uses RGB)
-            try:
-                self.camera=neoapi.Cam()
-                self.camera.Connect(vax_io._som.camport)
-                if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
-                    self.camera.f.PixelFormat.SetString('BGR8')
-                    print('BGR8')
-                elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
-                    self.camera.f.PixelFormat.SetString('Mono8')
-                    isColor = False
-                    print('Mono8')
-                else: print('No supported pixel format')        
-                self.camera.f.ExposureTime.Set(10000)
-                self.camera.f.AcquisitionFrameRateEnable.value = True
-                self.camera.f.AcquisitionFrameRate.value = 10
-                self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
-                                    (self.camera.f.Width.value, self.camera.f.Height.value), isColor)
-                print('Video Created')
-            except (neoapi.NeoException, Exception) as exc:
-                print('error', exc)
-                self.result=1    
-            
-        def start_cam(self):
-            print('Starting Camera')
-            for cnt in range(0,200):
-                self.img = self.camera.GetImage().GetNPArray()
-                title = 'press ESC to exit ..'
-                cv2.namedWindow(title, cv2.WINDOW_NORMAL)
-                cv2.imshow(title, self.img)
-                self.video.write(self.img)
-                if cv2.waitKey(1) == 27: break
+            self.camera = neoapi.Cam()
+            self.camera.Connect(vax_io._som.camport)
+
+            if self.cam.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+                self.cam.f.PixelFormat.SetString('BGR8')
+                print('BGR8')
+            elif self.cam.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+                self.cam.f.PixelFormat.SetString('Mono8')
+                isColor = False
+                print('Mono8')
 
         def stop_cam(self):
-            print('Stopping Cmaera')
-            self.video.release()
+            self.camera.Disconnect(vax_io._som.camport)
 
         def startTrigger(self):
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
@@ -92,12 +67,6 @@ try:
                 print(triggerImg.shape)
                 self.stopTrigger()
                 return True, triggerImg
-            
-        def __del__(self):
-            self.video.release()
-            cv2.destroyAllWindows()
-            ex(self.result)
-            print('System exit')
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
@@ -110,7 +79,6 @@ try:
                 now = datetime.now()
                 filename = 'Aufnahmen/' + now.strftime('%Y-%m-%d_%H-%M-%S') + '_Aufnahme.jpg'
                 cv2.imwrite(filename, self.image)
-            
                 return(filename, self.image) 
 
 except:   

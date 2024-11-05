@@ -148,7 +148,7 @@ class DummyObj():
 
     def printA(self):
         baumer.startCam()
-        for i in range(30):# and not videoStop.is_set():
+        for i in range(10):# and not videoStop.is_set():
             sleep(1)
             img = baumer.displayImage()          
 
