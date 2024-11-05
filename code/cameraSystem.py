@@ -62,7 +62,7 @@ try:
         def checkTrigger(self):
             triggerImg = self.camera.GetImage().GetNPArray()
             if triggerImg.shape == (0,0,1):
-                print('Listeing to Trigger: ', triggerImg.shape)
+                # print('Listeing to Trigger: ', triggerImg.shape)
                 return False, None
             else: 
                 print(triggerImg.shape)
