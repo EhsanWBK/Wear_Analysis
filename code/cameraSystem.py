@@ -47,7 +47,7 @@ try:
                 print('Mono8')
 
         def stopCam(self):
-            self.camera.Disconnect(vax_io._som.camport)
+            self.camera.Disconnect()
 
         def startTrigger(self):
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
@@ -71,7 +71,6 @@ try:
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
-            print(self.img.shape)
             return self.img
         
         def save_frame (self):

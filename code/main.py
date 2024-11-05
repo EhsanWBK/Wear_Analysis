@@ -39,8 +39,10 @@ def startCamera(sharedArray, stopEvent):
     print('\n----------------------- STARTING CAMERA -----------------------')
     try:
         while not stopEvent.is_set(): 
-            sharedArray[:] = videoCam.getImage()
-            streamFrame = sharedArray
+            camBuffer = videoCam.getImage()
+            if camBuffer.shape != (0,0,1): 
+                sharedArray[:] = camBuffer
+                streamFrame = sharedArray
     finally: 
         print('Problem Starting Camera')
         videoCam.stopCam()
