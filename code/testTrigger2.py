@@ -148,7 +148,7 @@ class DummyObj():
 
     def printA(self):
         baumer.startCam()
-        while not videoStop.is_set():
+        for i in range(30) and not videoStop.is_set():
             sleep(1)
             img = baumer.displayImage()          
 
@@ -160,8 +160,8 @@ class DummyObj():
             print(i)
         print('Stopping Trigger')
         baumer.stopTrigger()
-        baumer.displayImage()
-        baumer.startCam()
+        # baumer.displayImage()
+        # baumer.startCam()
         print('Interrupting Thread')
         videoStop.set()
         
@@ -174,5 +174,6 @@ bThread = th.Thread(target=dummy.printB)
 aThread.start()
 bThread.start()
 
-aThread.join()
 bThread.join()
+videoStop.set()
+aThread.join()
