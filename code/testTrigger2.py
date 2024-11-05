@@ -40,7 +40,8 @@ class Camera(object):
                 # cv2.imshow(title, self.img)
                 # self.video.write(self.img)
                 # if cv2.waitKey(1) == 27: break
-                print(self.img)
+                print(self.img.shape)
+                sleep(0.5)
 
 
     def startTrigger(self):
@@ -152,6 +153,8 @@ class DummyObj():
             img = baumer.displayImage()          
 
     def printB(self):
+        sleep(3)
+        baumer.startTrigger()
         for i in range(2):
             sleep(1)
             print(i)
