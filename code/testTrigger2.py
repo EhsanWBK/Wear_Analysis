@@ -22,6 +22,27 @@ class Camera(object):
         # connect internal camera and set exposure time
         self.cam = neoapi.Cam()
         self.cam.Connect(vax_io._som.camport)
+
+    def startCam(self):
+        if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+            self.camera.f.PixelFormat.SetString('BGR8')
+            print('BGR8')
+        elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+            self.camera.f.PixelFormat.SetString('Mono8')
+            isColor = False
+            print('Mono8')
+        self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
+                                    (self.camera.f.Width.value, self.camera.f.Height.value), isColor)
+        for cnt in range(0,200):
+                self.img = self.camera.GetImage().GetNPArray()
+                title = 'press ESC to exit ..'
+                cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+                cv2.imshow(title, self.img)
+                self.video.write(self.img)
+                if cv2.waitKey(1) == 27: break
+
+
+    def startTrigger(self):
         self.cam.f.TriggerMode.value = neoapi.TriggerMode_On
         self.cam.f.ExposureTime.value = 100000
 
@@ -124,6 +145,7 @@ class DummyObj():
         pass
 
     def printA(self):
+        baumer.startCam()
         while not videoStop.is_set():
             sleep(1)
             img = baumer.displayImage()          
@@ -131,12 +153,13 @@ class DummyObj():
     def printB(self):
         for i in range(2):
             sleep(1)
-            print('b')
-        print('Interrupting Thread')
-        videoStop.set()
+            print(i)
         print('Stopping Trigger')
         baumer.stopTrigger()
         baumer.displayImage()
+        baumer.startCam()
+        print('Interrupting Thread')
+        videoStop.set()
         
 
 

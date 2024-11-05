@@ -86,8 +86,12 @@ try:
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
 
         def checkTrigger(self):
-            if self.camera.GetImage().GetNPArray().shape == (0,0,1): return False, None
-            else: return True, self.camera.GetImage().GetNPArray()
+            triggerImg = self.camera.GetImage().GetNPArray()
+            if triggerImg.shape == (0,0,1): return False, None
+            else: 
+                print(triggerImg.shape)
+                self.stopTrigger()
+                return True, triggerImg
             
         def __del__(self):
             self.video.release()
