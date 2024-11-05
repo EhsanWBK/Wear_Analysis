@@ -37,7 +37,7 @@ class VideoCamera(object):
     def checkTrigger(self):
         triggerImg = self.camera.GetImage().GetNPArray()
         if triggerImg.shape == (0,0,1):
-            print('Listeing to Tirgger: ', triggerImg.shape)
+            print('Listeing to Trigger: ', triggerImg.shape)
             return False, None
         else: 
             print(triggerImg.shape)
@@ -73,15 +73,13 @@ class DummyObj():
         sleep(3)
         triggerSet = False
         baumer.startTrigger()
-        while not triggerSet:
+        for i in range(5): # abbort after 5 checkings
             sleep(1)
             triggerSet, img = baumer.checkTrigger()
         print('Stopping Trigger')
         baumer.stopTrigger()
         print('Interrupting Thread')
         videoStop.set()
-        
-
 
 dummy = DummyObj()
 aThread = th.Thread(target=dummy.printA)

@@ -39,15 +39,14 @@ try:
             self.camera = neoapi.Cam()
             self.camera.Connect(vax_io._som.camport)
 
-            if self.cam.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
-                self.cam.f.PixelFormat.SetString('BGR8')
+            if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+                self.camera.f.PixelFormat.SetString('BGR8')
                 print('BGR8')
-            elif self.cam.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
-                self.cam.f.PixelFormat.SetString('Mono8')
-                isColor = False
+            elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+                self.camera.f.PixelFormat.SetString('Mono8')
                 print('Mono8')
 
-        def stop_cam(self):
+        def stopCam(self):
             self.camera.Disconnect(vax_io._som.camport)
 
         def startTrigger(self):
@@ -62,7 +61,9 @@ try:
 
         def checkTrigger(self):
             triggerImg = self.camera.GetImage().GetNPArray()
-            if triggerImg.shape == (0,0,1): return False, None
+            if triggerImg.shape == (0,0,1):
+                print('Listeing to Trigger: ', triggerImg.shape)
+                return False, None
             else: 
                 print(triggerImg.shape)
                 self.stopTrigger()
@@ -70,6 +71,7 @@ try:
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
+            print(self.img.shape)
             return self.img
         
         def save_frame (self):
@@ -78,8 +80,7 @@ try:
             if saving:
                 now = datetime.now()
                 filename = 'Aufnahmen/' + now.strftime('%Y-%m-%d_%H-%M-%S') + '_Aufnahme.jpg'
-                cv2.imwrite(filename, self.image)
-                return(filename, self.image) 
+                return(filename, self.img) 
 
 except:   
     class VideoCamera(object):

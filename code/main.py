@@ -43,7 +43,7 @@ def startCamera(sharedArray, stopEvent):
             streamFrame = sharedArray
     finally: 
         print('Problem Starting Camera')
-        videoCam.stop_cam()
+        videoCam.stopCam()
 
 # Thread 2:
 def streamVid(event, stopEvent):
@@ -54,8 +54,7 @@ def streamVid(event, stopEvent):
         print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             sleep(1)
-            blob = streamFrame
-            print(blob.shape)
+            print(streamFrame.shape)
             blob = reformatFrame(frame=streamFrame)
             if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
         print('Stopped Streaming Data.')
@@ -101,9 +100,10 @@ def observeTrigger(event, stopEvent):
             triggerSet, frame = videoCam.checkTrigger()
             if triggerSet: 
                 print('Trigger set.')
-                blob = frame
-                if event.is_set(): eel.updateCanvas2(blob)()
+                blob = reformatFrame(frame=frame)
+                eel.updateCanvas2(blob)()
         print('Stopped Cheking Trigger')
+        videoCam.stopTrigger()
         event.clear()
 
     print('Trigger Observation to be terminated')
