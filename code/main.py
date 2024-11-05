@@ -233,13 +233,11 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.set() or triggerButton:
-        triggerButton = False
-        print('Stopping Trigger: ', triggerButton)
+    if triggerEvent.set():
+        print('Stopping Trigger')
         triggerEvent.clear()
     else: 
-        triggerButton = True
-        print('Start Trigger: ', triggerButton)
+        print('Start Trigger')
         triggerEvent.set()
 
 @eel.expose()
