@@ -24,22 +24,23 @@ class Camera(object):
         self.cam.Connect(vax_io._som.camport)
 
     def startCam(self):
-        if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
-            self.camera.f.PixelFormat.SetString('BGR8')
+        if self.cam.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+            self.cam.f.PixelFormat.SetString('BGR8')
             print('BGR8')
-        elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
-            self.camera.f.PixelFormat.SetString('Mono8')
+        elif self.cam.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+            self.cam.f.PixelFormat.SetString('Mono8')
             isColor = False
             print('Mono8')
-        self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
-                                    (self.camera.f.Width.value, self.camera.f.Height.value), isColor)
+        # self.video=cv2.VideoWriter(self.video_path, cv2.VideoWriter_fourcc(*'XVID'), 10,
+        #                             (self.cam.f.Width.value, self.cam.f.Height.value), isColor)
         for cnt in range(0,200):
-                self.img = self.camera.GetImage().GetNPArray()
-                title = 'press ESC to exit ..'
-                cv2.namedWindow(title, cv2.WINDOW_NORMAL)
-                cv2.imshow(title, self.img)
-                self.video.write(self.img)
-                if cv2.waitKey(1) == 27: break
+                self.img = self.cam.GetImage().GetNPArray()
+                # title = 'press ESC to exit ..'
+                # cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+                # cv2.imshow(title, self.img)
+                # self.video.write(self.img)
+                # if cv2.waitKey(1) == 27: break
+                print(self.img)
 
 
     def startTrigger(self):
