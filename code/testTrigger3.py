@@ -14,12 +14,11 @@ class VideoCamera(object):
         self.camera = neoapi.Cam()
         self.camera.Connect(vax_io._som.camport)
 
-        if self.cam.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
-            self.cam.f.PixelFormat.SetString('BGR8')
+        if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+            self.camera.f.PixelFormat.SetString('BGR8')
             print('BGR8')
-        elif self.cam.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
-            self.cam.f.PixelFormat.SetString('Mono8')
-            isColor = False
+        elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+            self.camera.f.PixelFormat.SetString('Mono8')
             print('Mono8')
 
     def stopCam(self):
