@@ -235,6 +235,7 @@ def stopVideo():
 def setTrigger():
     if triggerEvent.set():
         print('Stopping Trigger')
+        videoCam.stopTrigger()
         triggerEvent.clear()
     else: 
         print('Start Trigger')
