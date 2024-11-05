@@ -18,6 +18,7 @@ from modelTraining import trainCurModel, saveHistory
 from header import *
 
 streamFrame = None
+triggerButton = False
 
 #  =========================================
 #  	         Multithreading	Setup
@@ -232,11 +233,13 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.set():
-        print('Stopping Trigger')
+    if triggerEvent.set() or triggerButton:
+        triggerButton = False
+        print('Stopping Trigger: ', triggerButton)
         triggerEvent.clear()
     else: 
-        print('Start Trigger')
+        triggerButton = True
+        print('Start Trigger: ', triggerButton)
         triggerEvent.set()
 
 @eel.expose()
