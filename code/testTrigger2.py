@@ -132,12 +132,12 @@ class DummyObj():
         print('Interrupting Thread')
 
 
-# dummy = DummyObj()
-# aThread = th.Thread(target=dummy.printA)
-# bThread = th.Thread(target=dummy.printB)
+dummy = DummyObj()
+aThread = th.Thread(target=dummy.printA)
+bThread = th.Thread(target=dummy.printB)
 
-# aThread.start()
-# bThread.start()
+aThread.start()
+bThread.start()
 
-# aThread.join()
-# bThread.join()
+aThread.join()
+bThread.join()
