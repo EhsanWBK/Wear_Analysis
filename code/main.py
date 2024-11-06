@@ -234,7 +234,7 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.is_set():
+    if triggerEvent.set():
         print('Stopping Trigger')
         videoCam.stopTrigger()
         triggerEvent.clear()
