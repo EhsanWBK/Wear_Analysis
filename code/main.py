@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 from cv2 import imwrite
 import numpy as np
 
-from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator
+from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, getTimeStamp
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
 from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
 from cameraSystem import VideoCamera
@@ -102,6 +102,8 @@ def observeTrigger(event, stopEvent):
             triggerSet, frame = videoCam.checkTrigger()
             if triggerSet: 
                 print('Trigger set.')
+                filename = getTimeStamp()
+                imwrite(filename, frame)
                 blob = reformatFrame(frame=frame)
                 eel.updateCanvas2(blob)()
         print('Stopped Cheking Trigger')
@@ -235,7 +237,7 @@ def setTrigger():
     if triggerEvent.is_set():
         print('Stopping Trigger')
         videoCam.stopTrigger()
-        triggerEvent.clear()
+        # triggerEvent.clear()
     else: 
         print('Start Trigger')
         triggerEvent.set()
