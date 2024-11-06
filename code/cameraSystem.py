@@ -65,10 +65,12 @@ try:
             if triggerImg.shape == (0,0,1):
                 # print('Listeing to Trigger: ', triggerImg.shape)
                 return False, None
-            else: 
+            elif triggerImg.shape == (2048,2448,3): 
                 print(triggerImg.shape)
                 self.stopTrigger()
                 return True, triggerImg
+            else:
+                return False, None
 
         def getImage(self) -> bytes:  
             self.img = self.camera.GetImage().GetNPArray()
