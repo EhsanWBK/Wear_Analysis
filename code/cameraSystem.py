@@ -38,6 +38,7 @@ try:
 
             self.camera = neoapi.Cam()
             self.camera.Connect(vax_io._som.camport)
+            self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off # reset triffer mode if not done before closing
 
             if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
                 self.camera.f.PixelFormat.SetString('BGR8')
