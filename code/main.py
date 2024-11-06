@@ -307,7 +307,7 @@ def segmentVideo():
 def setup():
     print('\n----------------------- STARTING THREADS -----------------------')
     cameraThread.start()
-    sleep(3)
+    sleep(5)
     pictureThread.start()
     sleep(1)
     videoThread.start()
