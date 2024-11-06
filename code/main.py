@@ -43,8 +43,9 @@ def startCamera(sharedArray, stopEvent):
             if camBuffer.shape == (0,0,1): 
                 print('Trigger detected.')
                 pass
-            sharedArray[:] = camBuffer
-            streamFrame = sharedArray
+            else:
+                sharedArray[:] = camBuffer
+                streamFrame = sharedArray
     finally: videoCam.stopCam()
 
 # Thread 2:
