@@ -40,7 +40,7 @@ def startCamera(sharedArray, stopEvent):
     try:
         while not stopEvent.is_set(): 
             camBuffer = videoCam.getImage()
-            if camBuffer.shape != (0,0,1): 
+            if camBuffer.shape == (0,0,1): 
                 print('Trigger detected.')
                 pass
             sharedArray[:] = camBuffer
