@@ -51,6 +51,7 @@ try:
             self.camera.Disconnect()
 
         def startTrigger(self):
+            print('Starting Trigger')
             self.camera.f.TriggerMode.value = neoapi.TriggerMode_On
             vax_io.cam_trigger.value = False
             self.camera.f.LineSelector.value = neoapi.LineSelector_Line1
@@ -62,6 +63,7 @@ try:
 
         def checkTrigger(self):
             triggerImg = self.camera.GetImage().GetNPArray()
+            print(triggerImg.shape)
             if triggerImg.shape == (0,0,1):
                 # print('Listeing to Trigger: ', triggerImg.shape)
                 return False, None
