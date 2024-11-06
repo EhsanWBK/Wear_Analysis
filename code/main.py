@@ -41,11 +41,11 @@ def startCamera(sharedArray, stopEvent):
         while not stopEvent.is_set(): 
             camBuffer = videoCam.getImage()
             if camBuffer.shape != (0,0,1): 
-                sharedArray[:] = camBuffer
-                streamFrame = sharedArray
-    finally: 
-        print('Problem Starting Camera')
-        videoCam.stopCam()
+                print('Trigger detected.')
+                pass
+            sharedArray[:] = camBuffer
+            streamFrame = sharedArray
+    finally: videoCam.stopCam()
 
 # Thread 2:
 def streamVid(event, stopEvent):
@@ -307,7 +307,7 @@ def segmentVideo():
 def setup():
     print('\n----------------------- STARTING THREADS -----------------------')
     cameraThread.start()
-    sleep(1)
+    sleep(3)
     pictureThread.start()
     sleep(1)
     videoThread.start()
