@@ -17,7 +17,6 @@ from cameraSystem import VideoCamera
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
-streamFrame = None
 triggerButton = False
 
 #  =========================================
