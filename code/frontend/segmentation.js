@@ -80,10 +80,15 @@ function py_video() {
 }
 
 function py_trigger(){
-	if (document.getElementById('enableTrigger').checked==true){
-		eel.setTrigger()()
-	}
-	// eel.setTrigger()()
+	eel.setTrigger()()
+	document.getElementById('triggerButton').style.display = 'none';
+	document.getElementById('untriggerButton').style.display = 'block';
+}
+
+function py_untrigger(){
+	eel.setTrigger()()
+	document.getElementById('triggerButton').style.display = 'block';
+	document.getElementById('untriggerButton').style.display = 'none';
 }
 
 function py_foto() { 
