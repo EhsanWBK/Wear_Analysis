@@ -102,7 +102,7 @@ def observeTrigger(event, stopEvent):
             triggerSet, frame = videoCam.checkTrigger()
             if triggerSet: 
                 print('Trigger set.')
-                filename = getTimeStamp()
+                filename = str(getcwd())+str(getTimeStamp())+'.png' # change dir
                 imwrite(filename, frame)
                 blob = reformatFrame(frame=frame)
                 eel.updateCanvas2(blob)()
