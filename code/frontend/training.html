@@ -164,30 +164,18 @@
 						<td> <label for="selectAug"><b>Include Augmentation</b></label></td>
 					</table>
 					<br>
-					<table style="width: 800pt; padding-left: 5pt; border-left: 600pt; display: none;" id="augmentTable">
-						<tr>
-							<td> Rotation Range </td>
-							<td> <input type="number" id="rotationRange" min="0" step="1" value="25"> </td>
-						</tr>
-						<tr>
-							<td> Width Shift Range</td>
-							<td> <input type="number" id="widthShiftRange" min="0" step="0.1" value="10"> </td>
-						</tr>
-						<tr>
-							<td> Height Shift Range</td>
-							<td> <input type="number" id="heigthShiftRange" min="0" step="0.1" value="10"> </td>
-						</tr>
-						<tr>
-							<td> Zoom Range </td>
-							<td> <input type="number" id="zoomRange" min="1" step="0.1" value="0.3"> </td>
-						</tr>
+					<table style="width: 800pt; padding-left: 5pt; border-left: 600pt; display: block;" id="augmentTable">
 						<tr>
 							<td> Horizontal Flip </td>
 							<td> <input type="checkbox" id="horizontalFlip" checked> </td>
 						</tr>
 						<tr>
 							<td> Vertical Flip</td>
-							<td> <input type="checkbox" id="verticalFlip"> </td>
+							<td> <input type="checkbox" id="verticalFlip" checked> </td>
+						</tr>
+						<tr>
+							<td> Rotation 90 Degrees</td>
+							<td> <input type="checkbox" id="rot90deg" checked> </td>
 						</tr>
 					</table>
 

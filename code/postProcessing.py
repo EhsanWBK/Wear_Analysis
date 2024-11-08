@@ -165,6 +165,32 @@ def outlierDetection(filePath, resultFolder, cuttingEdges = 4):
 
     outlierFolder = join(resultFolder, 'outlier')
     makedirs(outlierFolder)
+
+    # Plot Total Wear Curve with DBSCAN filtering 
+    plt.figure(figsize=(12,8))
+    for index, row in df.iterrows():
+        wearVal = row[1:].to_numpy()
+        xVal = np.arange(1, len(wearVal)+1)
+        data2D = np.column_stack((xVal,wearVal))
+        clustering = DBSCAN(eps=15, min_samples=10).fit(data2D)
+        labels = clustering.labels_
+        classMemberMask = (labels != -1)
+        xy = data2D[classMemberMask]
+        plt.scatter(xVal, row[1:], marker='o', label=row['Tooth'], color=colors[index % len(colors)])
+        plt.plot(xy[:, 0], xy[:, 1], color=colors[index % len(colors)])        
+
+    plt.xticks(ticks=range(0, len(xLabel), 10), labels=[xLabel[i] for i in range(0, len(xLabel), 10)], rotation=45)
+    plt.xlabel('Cuts', fontsize=28)
+    plt.ylabel('VB (μm)', fontsize=28)
+    plt.title('Wear Curve (V$_{f}$=510 mm/min)', fontsize=34)  # Increase the title font size
+    plt.legend(loc='upper left',fontsize=24)  # Increase the legend font size
+    plt.ylim(y_min, y_max)  # Set common y-axis limit
+    plt.tick_params(axis='both', which='major', labelsize=24)
+    plt.grid(True, linestyle='--')  # Add grid lines
+    plt.tight_layout()
+    output_path = join(outlierFolder, 'VB_Curve_DBSCAN_'+str(getTimeStamp())+'.svg') # Full path to save the file
+    plt.savefig(output_path, format='svg', dpi=300) # Save the plot as a SVG file
+    
     for idx in range(cuttingEdges):
         wearVal = df.iloc[idx, 1:].to_numpy()
         xVal = np.arange(1, len(wearVal)+1)

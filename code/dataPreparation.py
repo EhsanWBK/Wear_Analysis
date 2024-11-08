@@ -13,8 +13,8 @@ Accessible Functions:
 - maskConversion(masks, numClasses)
 '''
 
-from numpy import ndarray, unique, linspace, expand_dims, array, squeeze
-from cv2 import resize, INTER_LINEAR, imwrite
+from numpy import ndarray, unique, linspace, expand_dims, array, squeeze, rot90
+from cv2 import resize, INTER_LINEAR, imwrite, flip
 from copy import deepcopy
 from os.path import join, exists
 from os import makedirs
@@ -23,6 +23,10 @@ from tensorflow import image as tfImg
 
 from generalUtensils import setupData, saveFrame, pathCreator
 from crop_align import alignImage, cropImage
+
+#  =========================================
+#  	     Single Pre-Processing Steps		
+#  =========================================
 
 def resizeSingleFrame(frame: ndarray, aspectRatio = None, channel: int = None) -> ndarray:
     ''' Resize single frame according to parameters. Returns resizedImages, resizedMasks, token.
@@ -33,7 +37,7 @@ def resizeSingleFrame(frame: ndarray, aspectRatio = None, channel: int = None) -
     return resizedFrame
 
 #  =========================================
-#  	        Pre-Processing Steps		
+#  	         Pre-Processing Steps		
 #  =========================================
 
 def alignAll(img: ndarray, projectPath: str, token: str='aligned', saveProgress: bool=True) -> ndarray:
@@ -46,7 +50,7 @@ def alignAll(img: ndarray, projectPath: str, token: str='aligned', saveProgress:
     if saveProgress: saveFrame(pathTarget=imgPath, image=imgAligned, token=token, imgData=False)
     return imgAligned, token
 
-def augementAll(img: ndarray, mask: ndarray, projectPath: str, names: str, token: str='aug', saveProgress: bool=True):
+def augementAll(img: ndarray, mask: ndarray, projectPath: str, fileNames: str, token: str='aug', saveProgress: bool=True):
     ''' Enhancing training by increased number of images. Used in pre-processing for training images. '''
     cfg.run_functions_eagerly(True)
     imgPath,maskPath = pathCreator(projectPath=projectPath)
@@ -56,48 +60,49 @@ def augementAll(img: ndarray, mask: ndarray, projectPath: str, names: str, token
     maskList = []
     imgNamesList = []
     maskNamesList = []
-    for i in range(len(img)):
-        imgTemp = expand_dims(img[i], 0)
-        maskTemp = expand_dims(mask[i], 0)
-        imgList.append(img[i])
-        imgList.append(squeeze(tfImg.flip_left_right(image=deepcopy(imgTemp))))
-        imgList.append(squeeze(tfImg.flip_up_down(image=deepcopy(imgTemp))))
-        imgList.append(squeeze(tfImg.rot90(image=deepcopy(imgTemp), k=1)))
-        maskList.append(mask[i])
-        maskList.append(squeeze(tfImg.flip_left_right(image=deepcopy(maskTemp))))
-        maskList.append(squeeze(tfImg.flip_up_down(image=deepcopy(maskTemp))))
-        maskList.append(squeeze(tfImg.rot90(image=deepcopy(maskTemp), k=1)))
 
-        imgNamesList.append(str(names[0][i])+'_01')
-        imgNamesList.extend([str(names[0][i])+'_02', str(names[0][i])+'_03', str(names[0][i])+'_04'])
-        maskNamesList.append(str(names[1][i])+'_01')
-        maskNamesList.extend([str(names[1][i])+'_02', str(names[1][i])+'_03', str(names[1][i])+'_04'])
+    for i in range(len(img)):
+        imgList.append(img[i])
+        imgList.append(flip(deepcopy(img[i]), 1))
+        imgList.append(flip(deepcopy(img[i]),0))
+        imgList.append(rot90(img[i]))
+        maskList.append(mask[i])
+        maskList.append(flip(deepcopy(mask[i]), 1))
+        maskList.append(flip(deepcopy(mask[i]),0))
+        maskList.append(rot90(mask[i]))
+
+        imgNamesList.append(str(fileNames[0][i])+'_original')
+        imgNamesList.extend([str(fileNames[0][i])+'_flip_hor', str(fileNames[0][i])+'_flip_ver', str(fileNames[0][i])+'_rot_90'])
+        maskNamesList.append(str(fileNames[1][i])+'_original')
+        maskNamesList.extend([str(fileNames[1][i])+'_flip_hor', str(fileNames[1][i])+'_flip_ver', str(fileNames[1][i])+'_rot_90'])
         
     if saveProgress:
         saveFrame(image=imgList, pathTarget=imgPath, names=imgNamesList, token=token)
         saveFrame(image=maskList, pathTarget=maskPath, names=maskNamesList, token=token, maskConversion=True)
-    return imgList, maskList, token
+    return imgList, maskList, token, [imgNamesList, maskNamesList]
 
-def cropAll(img: ndarray, mask: ndarray, projectPath: str, names: list, token: str='cropped', saveProgress: bool=True) -> ndarray:
+def cropAll(img: ndarray, mask: ndarray, projectPath: str, fileNames: list, token: str='cropped', saveProgress: bool=True) -> ndarray:
     ''' Crop stack of images and masks. '''
     img = cropImage(imageData=array(img))
-    mask = cropImage(imageData=array(mask))
+    try: mask = cropImage(imageData=array(mask)) 
+    except: pass
 
     imgPath, maskPath = pathCreator(projectPath)
     if saveProgress:
-        saveFrame(pathTarget=imgPath, image=img, token=token, names=names[0])
-        saveFrame(pathTarget=maskPath, image=mask, token=token, names=names[1], maskConversion=True)
-    print(img[0].shape)
+        saveFrame(pathTarget=imgPath, image=img, token=token, names=fileNames[0])
+        try: saveFrame(pathTarget=maskPath, image=mask, token=token, names=fileNames[1], maskConversion=True)
+        except: pass
     return img, mask, token
 
-def convertAll(img: ndarray, mask: ndarray, projectPath: str, names: str, token: str='converted', saveProgress: bool=True) -> ndarray:
+def convertAll(img: ndarray, mask: ndarray, projectPath: str, fileNames: list, token: str='converted', saveProgress: bool=True) -> ndarray:
     imgPath, maskPath = pathCreator(projectPath)
     if saveProgress:
-        saveFrame(pathTarget=imgPath, image=img, token=token, names=names[0])
-        saveFrame(pathTarget=maskPath, image=mask, token=token, names=names[1], maskConversion=True)
+        saveFrame(pathTarget=imgPath, image=img, token=token, names=fileNames[0])
+        try:saveFrame(pathTarget=maskPath, image=mask, token=token, names=fileNames[1], maskConversion=True)
+        except: pass
     return img, mask, token
 
-def resizeAll(img: ndarray, names: str, projectPath: str = '', aspectRatio: tuple = None, mask: ndarray = [], token: str = 'resized', saveProgress: bool=True) -> ndarray:
+def resizeAll(img: ndarray, fileNames: str, projectPath: str = '', aspectRatio: tuple = None, mask: ndarray = [], token: str = 'resized', saveProgress: bool=True) -> ndarray:
     imagesResized = []
     maskResized = []
     aspectRatio = (512,512) if aspectRatio is None else aspectRatio
@@ -105,12 +110,13 @@ def resizeAll(img: ndarray, names: str, projectPath: str = '', aspectRatio: tupl
     for singleFrame in img:
         resizedFrame = resizeSingleFrame(frame=singleFrame, aspectRatio=aspectRatio)
         imagesResized.append(resizedFrame)
-    if saveProgress: saveFrame(pathTarget=imgPath, image=imagesResized, names=names[0], token=token, maskConversion=True)
+    if saveProgress: saveFrame(pathTarget=imgPath, image=imagesResized, names=fileNames[0], token=token, maskConversion=True)
     if mask is not None:
+        print('Mask is not None.')
         for singleFrame in mask:
             resizedFrame = resizeSingleFrame(frame=singleFrame, aspectRatio=aspectRatio)
             maskResized.append(resizedFrame)
-        if saveProgress: saveFrame(pathTarget=imgPath, image=maskResized, names=names[1], token=token, maskConversion=True)
+        if saveProgress: saveFrame(pathTarget=imgPath, image=maskResized, names=fileNames[1], token=token, maskConversion=True)
     return array(imagesResized), array(maskResized), token
 
 
@@ -121,10 +127,10 @@ def resizeAll(img: ndarray, names: str, projectPath: str = '', aspectRatio: tupl
 def preProcStart(argument, projectPath, aspectRatio):
     img, mask, imgNames, maskNames = setupData(projectPath=projectPath, split=False)
     fileNames = [imgNames, maskNames]
-    if argument[0] == 'align': alignAll(img=img, projectPath=projectPath) # does not make any sense
-    elif argument[0] == 'crop': cropAll(img=img, mask=mask, projectPath=projectPath)
-    elif argument[0] == 'convert': convertAll(img=img, mask=mask, projectPath=projectPath)
-    elif argument[0] == 'resize': resizeAll(img=img, mask=mask, projectPath=projectPath, aspectRatio=aspectRatio)
+    if argument[0] == 'augment': augementAll(img=img, mask=mask, fileNames=fileNames, projectPath=projectPath) # does not make any sense
+    elif argument[0] == 'crop': cropAll(img=img, mask=mask, fileNames=fileNames, projectPath=projectPath)
+    elif argument[0] == 'convert': convertAll(img=img, mask=mask, fileNames=fileNames, projectPath=projectPath)
+    elif argument[0] == 'resize': resizeAll(img=img, mask=mask, projectPath=projectPath, fileNames=fileNames, aspectRatio=aspectRatio)
     elif argument[0] == 'training': preProcForDataStorage(frame=img, mask=mask, projectPath=projectPath, fileNames=fileNames, aspectRatio=aspectRatio)
     elif argument[0] == 'segment': preProcForSegment(imgArray=img, projectPath=projectPath, fileNames=fileNames, aspectRatio=aspectRatio)
     else: print('Unknown argument')
@@ -146,7 +152,7 @@ def preProcForSegment(imgArray: ndarray, projectPath: str, fileNames:list, aspec
         upscaledFrame = resize(img, (2048,2448), interpolation=INTER_LINEAR)
         segmentFrame = preProcFromCamera(frame=upscaledFrame, aspectRatio=aspectRatio, channel=channel)
         segmentImg.append(segmentFrame)
-    saveFrame(pathTarget=imgPath, image=segmentImg, names=fileNames, token='seg')
+    saveFrame(pathTarget=imgPath, image=segmentImg, fileNames=fileNames[0], token='seg')
     print('Saved all images')
 
 
@@ -169,13 +175,13 @@ def preProcForDataStorage(frame: ndarray, mask: ndarray, projectPath: str, fileN
     Saves images to subfolders of the project path after 1) cropping, 2) resizing.
     Resizing to target aspect ratio. Saves images and masks to pre-defined file formats in 'final' folder. '''
     print('\nCROPPING IMAGES')
-    frameCrop, maskCrop, _ = cropAll(img=frame, mask=mask, projectPath=projectPath, names=fileNames)
+    frameCrop, maskCrop, _ = cropAll(img=frame, mask=mask, projectPath=projectPath, fileNames=fileNames)
     print('\nRESIZING IMAGES')
-    frameResize, maskResize, _ = resizeAll(img=frameCrop, mask=maskCrop, projectPath=projectPath, names=fileNames, aspectRatio=aspectRatio)
+    frameResize, maskResize, _ = resizeAll(img=frameCrop, mask=maskCrop, projectPath=projectPath, fileNames=fileNames, aspectRatio=aspectRatio)
     print('\nAUGMENTING IMAGES')
-    frameAug, maskAug, _ = augementAll(img=frameResize, mask=maskResize, projectPath=projectPath, names=fileNames)
+    frameAug, maskAug, _, augNames = augementAll(img=frameResize, mask=maskResize, projectPath=projectPath, fileNames=fileNames)
     print('\nCONVERTING IMAGES')
-    frameFinal, maskFinal, _ = convertAll(img=frameAug, mask=maskAug, projectPath=projectPath, names=fileNames, token='final')
+    frameFinal, maskFinal, _ = convertAll(img=frameAug, mask=maskAug, projectPath=projectPath, fileNames=augNames, token='final')
 
 #  =========================================
 #  	        Online Pre-Processing		

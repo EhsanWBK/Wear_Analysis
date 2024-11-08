@@ -8,7 +8,7 @@ Accessible Functions:
 
 from modelArchitecture import UNet
 from dataPreparation import resizeAll
-from generalUtensils import setupData, getTimeStamp
+from generalUtensils import setupData, getTimeStamp, setupAugemented
 from header import CWD
 
 from keras.models import Model
@@ -49,7 +49,8 @@ def trainCurModel(par: dict) -> Model:
     shuffle=bool(par['shuffleTrain'])
     augmentation = bool(par['selectAug'])
 
-    trainData = setupData(projectPath=projectPath, par=par, split=True, token='final') 
+    if augmentation: trainData = setupAugemented(projectPath=projectPath, parDic=par, split=True)
+    else: trainData = setupData(projectPath=projectPath, par=par, split=True, token='final') 
     model = createModel(inputShape=inputShape, par=par)
     
     # transfer learning

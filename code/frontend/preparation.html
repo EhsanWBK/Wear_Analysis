@@ -140,7 +140,7 @@
 			<table style="width: 100%; padding-left: 5pt; border-spacing: 10pt 0 ;"> 
 				<tr><td><h2>Functions</h2></td></tr>
 				<tr align="left"> 
-					<td align="left"> <button id="resizeButton" onclick="" style="display: none; width: 130pt; height:40pt; font-size: 16px;">Resize Images</button> </td>
+					<td align="left"> <button id="resizeButton" onclick="py_resize()" style="display: none; width: 130pt; height:40pt; font-size: 16px;">Resize Images</button> </td>
 					<td><label id="explainResize" style="display: none;">Resizing of the images is an optional step. 
 						It is mostly necessary to fit the image size to the input parameters of specific models.
 						Inside the application, resizing steps are executed automatically when needed.
@@ -148,11 +148,12 @@
 					<!-- <td> Placeholder Image</td> -->
 				</tr>
 				<tr align="left"> 
-					<td align="left"> <button onclick="py_align()" style="width: 130pt; height:40pt; font-size: 16px;">Align all </button> </td>
-					<td> Aligning the images ensures the <i>Region of Interest</i> of each image is in the same place. 
+					<td align="left"> <button onclick="py_augment()" style="width: 130pt; height:40pt; font-size: 16px;">Augment all </button> </td>
+					<!-- <td> Aligning the images ensures the <i>Region of Interest</i> of each image is in the same place. 
 						This is necessary for further operations, such as cropping.
 						The alignment works on stacks of data by taking a reference image, or in this case mask, and matching all
-						the following images to it.</td>
+						the following images to it.</td> -->
+					<td> <i>Insert Explaination for Augementation.</i></td>
 					<td>  </td>
 				</tr>
 				

@@ -9,12 +9,12 @@ from numpy import ndarray, eye, float32
 from cv2 import MOTION_TRANSLATION, TERM_CRITERIA_EPS, TERM_CRITERIA_COUNT, INTER_LINEAR, WARP_INVERSE_MAP
 from cv2 import findTransformECC, warpAffine
 
-def cropImage(imageData: ndarray, deltaX: int = 700, deltaY: int = 1000) -> ndarray:
+def cropImage(imageData: ndarray, deltaX: int = 700, deltaY: int = 1000) -> list:
     ''' Takes in image (and aspect ration) and crops the image. Returns cropped image'''
-    for i in range(len(imageData)): # pass one or multiple images  
-        imgheight=imageData.shape[0]
-        imgwidth=imageData.shape[1]
-
+    croppedImages = []
+    imgheight=imageData.shape[1]
+    imgwidth=imageData.shape[2]
+    for entry in imageData: # pass one or multiple images  
         # Ensure the cropping coordinates are within the image dimensions
         start_x = max(0, int(imgwidth/2) - deltaX)
         end_x = min(imgwidth, int(imgwidth/2) + deltaX)
@@ -22,8 +22,9 @@ def cropImage(imageData: ndarray, deltaX: int = 700, deltaY: int = 1000) -> ndar
         end_y = min(imgheight, int(imgheight/2) + deltaY)
 
         # Slicing to crop the image
-        cropped_image = imageData[start_y:end_y, start_x:end_x] 
-    return cropped_image
+        cropped_image = entry[start_y:end_y, start_x:end_x] 
+        croppedImages.append(cropped_image)
+    return croppedImages
 
 def alignImage(imageData: ndarray) -> ndarray:
     ''' Takes in stack of images and aligns them according to the first image in the stack. Returns aligned stack.'''

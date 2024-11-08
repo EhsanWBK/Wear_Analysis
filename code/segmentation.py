@@ -60,7 +60,7 @@ def segmentDataStack(dataPath, model, nrEdges, savePath):
     resultsVBMax, resultFolder, resultFile = wearDetectionStack(dataPath=dataPath, model=model, nrEdges=nrEdges, resultFolder=resultFolder)
     wearCurve = plotWearCurve(filePath=resultFile, resultFolder=resultFolder)
     wearCurve = outlierDetection(filePath=resultFile,resultFolder=resultFolder)
-    wearCurve = plotWearCurveLOWESS(filePath=resultFile, resultFolder=resultFolder)
+    # wearCurve = plotWearCurveLOWESS(filePath=resultFile, resultFolder=resultFolder)
     return wearCurve
 
 def wearDetectionStack(dataPath, model, nrEdges, resultFolder):
@@ -79,7 +79,7 @@ def wearDetectionStack(dataPath, model, nrEdges, resultFolder):
         imwrite(join(predFolder,'pred_'+filename+'.tiff'), pred)
         sampleVBMax = measurementVB(frame=pred, saveFolder=resultFolder, filename=filename)
         resultsVBMax.append(sampleVBMax)
-        print('\nFilename: ', filename, '\nVB max: ',sampleVBMax)
+        print('Filename: ', filename, '\nVB max: ',sampleVBMax,'\n')
     resultFolder, resultFile = writeCSV(resultsVBMax=resultsVBMax, resultFolder=resultFolder)
     return resultsVBMax, resultFolder, resultFile
 

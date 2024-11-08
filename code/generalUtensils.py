@@ -9,9 +9,9 @@ Accessible Functions:
 
 from numpy import ndarray, expand_dims, array
 from os import listdir, remove, mkdir
-from os.path import join, isfile, isdir, splitext
+from os.path import join, isfile, isdir, splitext, exists
 from tqdm import tqdm
-from cv2 import imread, imwrite, imencode
+from cv2 import imread, imwrite, imencode, resize, INTER_LINEAR
 from base64 import b64encode
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -42,7 +42,8 @@ def getTimeStamp() -> datetime:
 
 def reformatFrame(frame):
     ''' Reformats image and converts to utf-8 BLOB (binary large object).'''
-    jpeg = imencode('.jpeg', frame)[1]
+    frameResize = resize(frame, (512, 512), interpolation=INTER_LINEAR)
+    jpeg = imencode('.jpeg', frameResize)[1]
     byte_data = jpeg.tobytes() #
     blob = b64encode(byte_data)
     return blob.decode("utf-8")
@@ -104,6 +105,7 @@ def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConv
     setupFolder(folderPath=pathTarget, token=token)
     print('\nSAVING IMAGES at: ', pathTarget,token)
     print('Saving Image Type:\t', suffix)
+    print('Nr. Image Names: ', len(names))
     for imgEntry in range(len(image)):
         filename=join(pathTarget, token, token+'_'+str(names[imgEntry])+suffix)
         imwrite(filename, image[imgEntry]) # edit function
@@ -155,12 +157,15 @@ def setupData(projectPath: str, par: dict = None, split: bool = True, token: str
     ''' Takes in project path and returns data. If "split" is True, data is split into training and testing data set. Data is stored in dictionary with keywords:
     'xTrain', 'yTrain', 'xTest', 'yTest'
     If False returns image and mask data instead. '''
+
     imgPath, maskPath = pathCreator(projectPath=projectPath, grabData=True, token=token)
     if token == 'final': maskPath= join(projectPath, 'masks', 'final_tif')
     images, imageNames = imageReader(imgPath)
     # except:images = []
-    masks, maskNames = imageReader(maskPath)
-    # except:masks, maskNames = []
+    if exists(maskPath): masks, maskNames = imageReader(maskPath)
+    else: 
+        masks = None
+        maskNames = None
 
     if split:
         xTrain, xTest, yTrain, yTest = train_test_split(images, masks, test_size=float(par['validationSize']), random_state=int(par['randomState']), shuffle=bool(par['randomSelection']))
@@ -172,5 +177,54 @@ def setupData(projectPath: str, par: dict = None, split: bool = True, token: str
         }
         return data
     else: 
-        print('\nPrepared data without splitting: Image Data of Shape ', images.shape, ' and Mask Data of Shape ', masks.shape)
+        # print('\nPrepared data without splitting: Image Data of Shape ', images.shape, ' and Mask Data of Shape ', masks.shape)
         return images, masks, imageNames, maskNames
+
+def setupAugemented(projectPath: str, parDic: dict = None, split: bool = True):
+    horFlip = bool(parDic['horizontalFlip'])
+    verFlip = bool(parDic['verticalFlip'])
+    rot90deg = bool(parDic['rot90deg'])
+    
+    imgPath = join(projectPath, 'images', 'final')
+    maskPath = join(projectPath, 'masks', 'final_tif')
+
+    trainImgData = []
+    trainMaskData = []
+
+    if horFlip:
+        horFlipImgPath, horFlipMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
+        horFlipImg = [imread(filePath, 0) for filePath in horFlipImgPath]
+        horFlipMask = [imread(filePath, 0) for filePath in horFlipMaskPath]
+        trainImgData.append(horFlipImg)
+        trainMaskData.append(horFlipMask)
+
+    if verFlip:
+        verFlipImgPath, verFlipMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
+        verFlipImg = [imread(filePath, 0) for filePath in verFlipImgPath]
+        verFlipMask = [imread(filePath, 0) for filePath in verFlipMaskPath]
+        trainImgData.append(verFlipImg)
+        trainMaskData.append(verFlipMask)
+
+    if rot90deg:
+        rot90degImgPath, rot90degMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
+        rot90degImg = [imread(filePath, 0) for filePath in rot90degImgPath]
+        rot90degMask = [imread(filePath, 0) for filePath in rot90degMaskPath]
+        trainImgData.append(rot90degImg)
+        trainMaskData.append(rot90degMask)
+
+    if split:
+        xTrain, xTest, yTrain, yTest = train_test_split(trainImgData, trainMaskData, test_size=float(parDic['validationSize']), random_state=int(parDic['randomState']), shuffle=bool(parDic['randomSelection']))
+        data = {
+                'xTrain': xTrain,
+                'yTrain': yTrain,
+                'xTest': xTest,
+                'yTest': yTest
+            }
+        return data
+    else: return None
+    
+
+def getAugFilePaths(pathImg, pathMask, extension):
+    imgPaths = [join(pathImg, f) for f in listdir(pathImg) if isfile(join(pathImg, f)) and f.endswith(extension)]
+    maskPaths = [join(pathMask, f) for f in listdir(pathMask) if isfile(join(pathMask, f)) and f.endswith(extension)]
+    return imgPaths, maskPaths
