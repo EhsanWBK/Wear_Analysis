@@ -40,7 +40,7 @@ class CamServer:
         self.imgNode.set_writable()
 
         self.triggerObj = self.objects.add_object(idx, "Trigger Node")
-        self.triggerNode = self.dummy.add_variable(idx, 'trigger', Variant(False,VariantType.Boolean))
+        self.triggerNode = self.triggerObj.add_variable(idx, 'trigger', Variant(False,VariantType.Boolean))
         self.triggerNode.set_writable()
 
     def startServer(self):
