@@ -128,9 +128,10 @@ def castImage():
     camServer = CamServer()
     serverOnline = camServer.startServer()
     triggerSignal = camServer.checkTrigger()
+    print('Trigger Signal: ', triggerSignal)
     try:
         while True:
-            while triggerSignal:
+            while not triggerSignal:
                 if stopEvent.is_set(): return
                 imgString = cam.getFrame()
                 camServer.streamImg(imgString=imgString)
