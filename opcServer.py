@@ -65,7 +65,7 @@ class CamServer:
         
     def checkTrigger(self):
         trigger = self.triggerSetNode.get_value()
-        print('Trigger Val: ', trigger)
+        if trigger: print('Trigger Val: ', trigger)
         return trigger
 
     def dummyStream(self, nr):
