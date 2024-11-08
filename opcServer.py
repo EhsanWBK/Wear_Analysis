@@ -116,6 +116,7 @@ class Baumer():
         self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
 
     def checkTrigger(self):
+        self.triggerModeOn()
         triggerImg = self.camera.GetImage().GetNPArray()
         print(triggerImg.shape)
         if triggerImg.shape == (0,0,1):
