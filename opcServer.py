@@ -40,8 +40,10 @@ class CamServer:
         self.imgNode.set_writable()
 
         self.triggerObj = self.objects.add_object(idx, "Trigger Node")
-        self.triggerNode = self.triggerObj.add_variable(idx, 'trigger', Variant(False,VariantType.Boolean))
-        self.triggerNode.set_writable()
+        self.triggerImgNode = self.triggerObj.add_variable(idx, 'triggerImg', Variant(False,VariantType.Boolean))
+        self.triggerSetNode = self.triggerObj.add_variable(idx, 'triggerSet', Variant(False,VariantType.Boolean))
+        self.triggerImgNode.set_writable()
+        self.triggerSetNode.set_writable()
 
     def startServer(self):
         try: self.server.start()
@@ -62,7 +64,9 @@ class CamServer:
             return False
         
     def checkTrigger(self):
-        return self.triggerNode.get_value()
+        trigger = self.triggerSetNode.get_value()
+        print('Trigger Val: ', trigger)
+        return trigger
 
     def dummyStream(self, nr):
         self.dummyNr.set_value(nr)
@@ -71,8 +75,9 @@ class CamServer:
         sleep(1)
         return self.dummyNr.get_value()
 
-    def streamImg(self, imgString):
+    def streamImg(self, imgString, trigger):
         self.imgNode.set_value(DataValue(Variant(imgString, VariantType.String)))
+        if trigger: self.triggerImgNode.set_value(DataValue(Variant(trigger),VariantType.Boolean))
 
 class Baumer():
 
@@ -113,11 +118,11 @@ class Baumer():
     def checkTrigger(self):
         triggerImg = self.camera.GetImage().GetNPArray()
         if triggerImg.shape == (0,0,1):
-            return None
+            return False, None
         else: 
             print(triggerImg.shape)
             self.triggerModeOff()
-            return triggerImg
+            return True, triggerImg
         
 def castImage():
     # stream image
@@ -134,13 +139,14 @@ def castImage():
             while not triggerSignal:
                 if stopEvent.is_set(): return
                 imgString = cam.getFrame()
-                camServer.streamImg(imgString=imgString)
+                camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
             cam.triggerModeOn()
             while triggerSignal:
                 if stopEvent.is_set(): return
-                imgString = cam.checkTrigger()
-                if imgString != None: camServer.streamImg(imgString=imgString)
+                triggerSet, imgString = cam.checkTrigger()
+                if imgString != None: camServer.streamImg(imgString=imgString, trigger=True)
+                while triggerSet: triggerSet, imgString = cam.checkTrigger()
                 triggerSignal = camServer.checkTrigger()
             cam.triggerModeOff()
     finally:
