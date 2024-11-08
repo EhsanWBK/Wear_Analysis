@@ -188,9 +188,10 @@ def dummyServer():
         serverOnline = camServer.stopServer()
 
 # hostServer()
-dummyServer()
+# dummyServer()
 
 if __name__ == '__main__':
-    camThread = th.Thread(target=castImage, args=(stopEvent, triggerSet))
-    checkTrigger = th.Thread(target=checkTrigger, args=(stopEvent, triggerSet))
+    # camThread = th.Thread(target=castImage, args=(stopEvent, triggerSet))
+    # checkTrigger = th.Thread(target=checkTrigger, args=(stopEvent, triggerSet))
+    castImage()
     
