@@ -126,6 +126,7 @@ def castImage():
     # return image string OR no image
     cam = Baumer()
     camServer = CamServer()
+    serverOnline = camServer.startServer()
     triggerSignal = camServer.checkTrigger()
     try:
         while True:
