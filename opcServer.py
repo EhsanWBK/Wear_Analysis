@@ -15,8 +15,8 @@ except:
 
 
 # Server setup
-# ENDPOINT = "opc.tcp://141.3.142.81:12345" # CHANGE???
-ENDPOINT = 'opc.tcp://127.0.0.1:12345'
+ENDPOINT = "opc.tcp://141.3.142.81:12345" # CHANGE???
+# ENDPOINT = 'opc.tcp://127.0.0.1:12345'
 NAMESPACE = 'CameraSpace'
 
 # Camera setup
