@@ -17,6 +17,7 @@ const checkRandomSelection = document.getElementById('randomSelection');
 const checkSelectAugmentation = document.getElementById('selectAug');
 const checkHorizontalFlip = document.getElementById('horizontalFlip');
 const checkVerticalFlip = document.getElementById('verticalFlip');
+const checkRot90Deg = document.getElementById('rot90deg');
 const checkTransferLearn = document.getElementById('transferLearn');
 const checkShuffleTrain = document.getElementById('shuffleTrain');
 
@@ -28,10 +29,6 @@ const inputImageWidth = document.getElementById('imageWidth');
 const inputNrChannels = document.getElementById('nrChannels');
 const inputValSize = document.getElementById('validationSize');
 const inputRandomState = document.getElementById('randomState');
-const inputRotationRange = document.getElementById('rotationRange');
-const inputWidthShiftRange = document.getElementById('widthShiftRange');
-const inputHeightShiftRange = document.getElementById('heigthShiftRange');
-const inputZoomRange = document.getElementById('zoomRange');
 const inputBatchSize = document.getElementById('batchSize');
 const inputNrEpochs = document.getElementById('nrEpochs');
 const inputEarlyStopping = document.getElementById('earlyStopping');
@@ -78,13 +75,11 @@ function py_train() {
 	parDict['earlyStopping'] = inputEarlyStopping.value;
 	parDict['transferLearn'] = checkTransferLearn.checked;
 	parDict['shuffleTrain'] = checkShuffleTrain.checked;
+
 	parDict['selectAug'] = checkSelectAugmentation.checked;
-	parDict['rotationRange'] = inputRotationRange.value;
-	parDict['widthShiftRange'] = inputWidthShiftRange.value;
-	parDict['heigthShiftRange'] = inputHeightShiftRange.value;
-	parDict['zoomRange'] = inputZoomRange.value;
 	parDict['horizontalFlip'] = checkHorizontalFlip.checked;
-	parDict['verticalFlip'] = checkVerticalFlip.checked;;
+	parDict['verticalFlip'] = checkVerticalFlip.checked;
+	parDict['rot90deg'] = checkRot90Deg.checked;
 
 	console.table(parDict);
 	eel.trainModel(parDict)();

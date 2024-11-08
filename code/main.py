@@ -13,7 +13,7 @@ import numpy as np
 from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, getTimeStamp
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
 from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
-from cameraSystem import VideoCamera
+from opcCon import CamClient
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
@@ -30,22 +30,18 @@ stopEvent = Event()
 streamSegEvent = Event()
 triggerEvent = Event()
 
-videoCam = VideoCamera()
 
 # Thread 1:
-def startCamera(sharedArray, stopEvent):
+def startCameraOPC(sharedArray, stopEvent):
     ''' Starting the OPC UA Client for the Camera.'''
     global streamFrame
-    print('\n----------------------- STARTING CAMERA -----------------------')
+    print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
+        cameraClient = CamClient()
         while not stopEvent.is_set(): 
-            camBuffer = videoCam.getImage()
-            if camBuffer.shape == (0,0,1): 
-                pass
-            else:
-                sharedArray[:] = camBuffer
-                streamFrame = sharedArray
-    finally: videoCam.stopCam()
+            sharedArray[:] = cameraClient.getImage()
+            streamFrame = sharedArray
+    finally: cameraClient.stopClient()
 
 # Thread 2:
 def streamVid(event, stopEvent):
@@ -93,22 +89,22 @@ def streamSeg(event, stopEvent):
 # Thread 5:
 def observeTrigger(event, stopEvent):
     print('\t- Trigger Observation Thread Set Up.')
-    while not stopEvent.is_set():
-        event.wait()
-        if stopEvent.is_set():return
-        print('Start Checking Trigger')
-        if event.is_set() and not stopEvent.is_set(): videoCam.startTrigger()
-        while event.is_set() and not stopEvent.is_set():
-            triggerSet, frame = videoCam.checkTrigger()
-            if triggerSet: 
-                print('Trigger set.')
-                filename = str(getcwd())+str(getTimeStamp())+'.png' # change dir
-                imwrite(filename, frame)
-                blob = reformatFrame(frame=frame)
-                eel.updateCanvas2(blob)()
-        print('Stopped Cheking Trigger')
-        videoCam.stopTrigger()
-        event.clear()
+    # while not stopEvent.is_set():
+    #     event.wait()
+    #     if stopEvent.is_set():return
+    #     print('Start Checking Trigger')
+    #     if event.is_set() and not stopEvent.is_set(): videoCam.startTrigger()
+    #     while event.is_set() and not stopEvent.is_set():
+    #         triggerSet, frame = videoCam.checkTrigger()
+    #         if triggerSet: 
+    #             print('Trigger set.')
+    #             filename = str(getcwd())+str(getTimeStamp())+'.png' # change dir
+    #             imwrite(filename, frame)
+    #             blob = reformatFrame(frame=frame)
+    #             eel.updateCanvas2(blob)()
+    #     print('Stopped Cheking Trigger')
+    #     videoCam.stopTrigger()
+    #     event.clear()
 
     print('Trigger Observation to be terminated')
 
@@ -190,9 +186,8 @@ def getDirectory(elementID):
 def preProcSteps(argument, parameters):
     projectPath = parameters[0] if len(parameters) < 3 else str(parameters[0])
     aspectRatio = None if len(parameters) < 3 else (int(parameters[1]), int(parameters[2]))
-    print('\nStarting Preprocessing')
+    print('\nStarting Preprocessing for ', argument[0])
     print('Project Path: ', projectPath)
-    print('Argument: ',argument)
     print('Parameters: ', parameters)
     preProcStart(argument=argument, projectPath=projectPath, aspectRatio=aspectRatio)
 
@@ -236,7 +231,7 @@ def stopVideo():
 def setTrigger():
     if triggerEvent.set():
         print('Stopping Trigger')
-        videoCam.stopTrigger()
+        # videoCam.stopTrigger()
         triggerEvent.clear()
     else: 
         print('Start Trigger')
@@ -343,7 +338,7 @@ def shutdown():
 
 if __name__ == '__main__':
     # Thread 1: 
-    cameraThread = Thread(target=startCamera, args=(IMG_ARRAY, stopEvent))
+    cameraThread = Thread(target=startCameraOPC, args=(IMG_ARRAY, stopEvent))
     # Thread 2:
     pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
     # Thread 3:
