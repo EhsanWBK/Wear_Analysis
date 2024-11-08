@@ -117,12 +117,14 @@ class Baumer():
 
     def checkTrigger(self):
         triggerImg = self.camera.GetImage().GetNPArray()
+        ret, jpeg = cv2.imencode('.jpg', triggerImg)
+        jpegString = base64.b64encode(jpeg).decode('utf-8')
         if triggerImg.shape == (0,0,1):
             return False, None
         else: 
             print(triggerImg.shape)
             self.triggerModeOff()
-            return True, triggerImg
+            return True, jpegString
         
 def castImage():
     # stream image
