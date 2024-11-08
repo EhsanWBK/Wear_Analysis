@@ -17,8 +17,6 @@ from opcCon import CamClient
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
-triggerButton = False
-
 #  =========================================
 #  	         Multithreading	Setup
 #  =========================================
@@ -32,15 +30,20 @@ triggerEvent = Event()
 
 
 # Thread 1:
-def startCameraOPC(sharedArray, stopEvent):
+def startCameraOPC(sharedArray, stopEvent, triggerMode):
     ''' Starting the OPC UA Client for the Camera.'''
-    global streamFrame
+    global streamFrame, triggerSet
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
         cameraClient = CamClient()
         while not stopEvent.is_set(): 
+            cameraClient.setTriggerMode(triggerMode.is_set())
             sharedArray[:] = cameraClient.getImage()
             streamFrame = sharedArray
+            triggerSet = cameraClient.getTrigger()
+            if triggerSet: 
+                sleep(1)
+                cameraClient.receivedTrigger()
     finally: cameraClient.stopClient()
 
 # Thread 2:
@@ -54,7 +57,10 @@ def streamVid(event, stopEvent):
             sleep(1)
             # print(streamFrame.shape)
             blob = reformatFrame(frame=streamFrame)
-            if event.is_set(): eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
+            if event.is_set() and not triggerSet: eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
+            elif event.is_set() and triggerSet: 
+                print('Received an image')
+                eel.updateCanvas2(blob)()
         print('Stopped Streaming Data.')
         event.clear()
 
@@ -86,27 +92,6 @@ def streamSeg(event, stopEvent):
         event.clear()
     print('Stream Segementation to be terminated.')
 
-# Thread 5:
-def observeTrigger(event, stopEvent):
-    print('\t- Trigger Observation Thread Set Up.')
-    # while not stopEvent.is_set():
-    #     event.wait()
-    #     if stopEvent.is_set():return
-    #     print('Start Checking Trigger')
-    #     if event.is_set() and not stopEvent.is_set(): videoCam.startTrigger()
-    #     while event.is_set() and not stopEvent.is_set():
-    #         triggerSet, frame = videoCam.checkTrigger()
-    #         if triggerSet: 
-    #             print('Trigger set.')
-    #             filename = str(getcwd())+str(getTimeStamp())+'.png' # change dir
-    #             imwrite(filename, frame)
-    #             blob = reformatFrame(frame=frame)
-    #             eel.updateCanvas2(blob)()
-    #     print('Stopped Cheking Trigger')
-    #     videoCam.stopTrigger()
-    #     event.clear()
-
-    print('Trigger Observation to be terminated')
 
 #  =========================================
 #  	       HTML Interface Functions		
@@ -311,8 +296,6 @@ def setup():
     sleep(1) # give setup some time
     onlineSegThread.start()
     sleep(1)
-    triggerThread.start()
-    sleep(1)
     htmlThread.start()
 
 
@@ -332,13 +315,11 @@ def shutdown():
     print('\t- Stopped Video Thread.')
     onlineSegThread.join(timeout=1)
     print('\t- Stopped Online Segmentation Thread.')
-    triggerThread.join(timeout=-1)
-    print('\t- Stopped Trigger Observation Thread.')
     print('\t- Stopped all Threads.')
 
 if __name__ == '__main__':
     # Thread 1: 
-    cameraThread = Thread(target=startCameraOPC, args=(IMG_ARRAY, stopEvent))
+    cameraThread = Thread(target=startCameraOPC, args=(IMG_ARRAY, stopEvent, triggerEvent))
     # Thread 2:
     pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
     # Thread 3:
@@ -347,8 +328,6 @@ if __name__ == '__main__':
     onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
     # Thread 5:
     htmlThread = Thread(target=startHTML)
-    # Thread 6:
-    triggerThread = Thread(target=observeTrigger, args=(triggerEvent, stopEvent))
 
     setup() # setting up system
     htmlClosed.wait()
