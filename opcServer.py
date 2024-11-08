@@ -77,7 +77,7 @@ class CamServer:
 
     def streamImg(self, imgString, trigger):
         self.imgNode.set_value(DataValue(Variant(imgString, VariantType.String)))
-        if trigger: self.triggerImgNode.set_value(DataValue(Variant(trigger),VariantType.Boolean))
+        if trigger: self.triggerImgNode.set_value(DataValue(Variant(trigger,VariantType.Boolean)))
 
 class Baumer():
 
