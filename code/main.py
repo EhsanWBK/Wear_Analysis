@@ -6,11 +6,9 @@ from os import makedirs
 from os.path import join, exists
 from sys import exit
 from threading import Event, Thread
-from matplotlib import pyplot as plt
 from cv2 import imwrite
-import numpy as np
 
-from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, getTimeStamp
+from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, saveTrigger
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
 from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
 from opcCon import CamClient
@@ -21,29 +19,26 @@ from header import *
 #  	         Multithreading	Setup
 #  =========================================
 
-htmlClosed = Event()
-pictureEvent = Event()
-videoEvent = Event()
-stopEvent = Event()
-streamSegEvent = Event()
-triggerEvent = Event()
-
+htmlClosed = Event(); pictureEvent = Event(); videoEvent = Event(); stopEvent = Event(); streamSegEvent = Event(); triggerEvent = Event()
 
 # Thread 1:
 def startCameraOPC(sharedArray, stopEvent, triggerMode):
     ''' Starting the OPC UA Client for the Camera.'''
-    global streamFrame, triggerSet
+    global streamFrame, triggerSet; triggerTemp = []
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
         cameraClient = CamClient()
         while not stopEvent.is_set(): 
             cameraClient.setTriggerMode(triggerMode.is_set())
-            sharedArray[:] = cameraClient.getImage()
-            streamFrame = sharedArray
+            sharedArray[:] = cameraClient.getImage(); streamFrame = sharedArray
             triggerSet = cameraClient.getTrigger()
             if triggerSet: 
-                sleep(1)
+                sleep(1) # CHECK WITH REMOVED BUFFER
+                print('Received Trigger.')
                 cameraClient.receivedTrigger()
+                triggerTemp.append(streamFrame)
+                sleep(1) # CHECK WITH REMOVED BUFFER
+            if not triggerMode.is_set() and triggerTemp != []: saveTrigger(triggerTemp); triggerTemp = []
     finally: cameraClient.stopClient()
 
 # Thread 2:
@@ -52,15 +47,10 @@ def streamVid(event, stopEvent):
     while not stopEvent.is_set():
         event.wait()
         if stopEvent.is_set(): return
-        print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
-            sleep(1)
-            # print(streamFrame.shape)
             blob = reformatFrame(frame=streamFrame)
             if event.is_set() and not triggerSet: eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
-            elif event.is_set() and triggerSet: 
-                print('Received an image')
-                eel.updateCanvas2(blob)()
+            elif event.is_set() and triggerSet: print('Received an image'); eel.updateCanvas2(blob)()
         print('Stopped Streaming Data.')
         event.clear()
 
@@ -82,16 +72,11 @@ def streamSeg(event, stopEvent):
     while not stopEvent.is_set():
         event.wait()
         if stopEvent.is_set(): return
-        print('Start Streaming Data')
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
-            sleep(1)
             overlayFrame = videoSegmentation(frame=streamFrame, model=currentModel)
             blob = reformatFrame(frame=overlayFrame)
             if event.is_set(): eel.updateCanvas2(blob)() # implement timeout function OR delete cache in eel, when html is closed.
-        print('Stopped Streaming Data.')
         event.clear()
-    print('Stream Segementation to be terminated.')
-
 
 #  =========================================
 #  	       HTML Interface Functions		
@@ -102,36 +87,20 @@ def streamSeg(event, stopEvent):
 # ------------------
 
 def startHTML():
-    ''' Start HTML application. '''
     try:
-        BASEDIR = CWD
         print('\n----------------------- STARTING HTML APPLICATION -----------------------')
-        print('Base Directory:\t\t', BASEDIR)
-        WEBDIR = join(BASEDIR, 'code', 'frontend')
-        print('Web Dir:\t\t',WEBDIR,'\n') # initialize HTML interface in the 'frontend' folder
-        eel.init(WEBDIR) 
-        eel.start("index.html", mode="Chorme")# change "mode" depending on browser to use application in
-    except Exception as e: # throw error if HTML setup is faulty
-        err_msg = 'Could not launch a local server'
-        exit()
+        BASEDIR = CWD; print('Base Directory:\t\t', BASEDIR)
+        WEBDIR = join(BASEDIR, 'code', 'frontend'); print('Web Dir:\t\t',WEBDIR,'\n')
+        eel.init(WEBDIR); eel.start("index.html", mode="Chorme")
+    except Exception as e: exit()
 
 @eel.expose()
 def windowClosed():
     print('\n----------------------- CLOSING HTML WINDOW -----------------------')
-    print('\t- Clearing Video Stream Event.')
-    videoEvent.clear()
-    print('\t- Video Stream Event is cleared.')
-    sleep(2)
-    streamSegEvent.clear()
-    print('\t- Video Segmentation Event is cleared.')
-    sleep(2)
-    triggerEvent.clear()
-    print('\t- Trigger Event is cleared.')
-    sleep(2)
-    print('\t- Set HMTL Close Event')
-    htmlClosed.set()
-    print('\t- HTML can be closed now.')
-
+    print('\t- Clearing Video Stream Event.'); videoEvent.clear(); print('\t- Video Stream Event is cleared.')
+    sleep(2); streamSegEvent.clear(); print('\t- Video Segmentation Event is cleared.')
+    sleep(2); triggerEvent.clear(); print('\t- Trigger Event is cleared.')
+    sleep(2); print('\t- Set HMTL Close Event'); htmlClosed.set(); print('\t- HTML can be closed now.')
 
 # ----------------------------------
 #        Interface Functions
@@ -139,13 +108,10 @@ def windowClosed():
 
 @eel.expose()
 def getFile(elementID):
-    ''' Select single file over Tkinter interface and file explorer. File is assigned an "elementID" in HTML interface. '''
-    path = CWD
     if elementID == 'imageInput': path=SINGLE_DATA_PATH
     if elementID == 'modelDirPath': path=SAVE_MODEL_PATH
-    root = Tk()
-    root.attributes("-topmost", True)
-    filename = filedialog.askopenfilename(initialdir=path) # CHANGE TO DATA FILE
+    root = Tk(); root.attributes("-topmost", True)
+    filename = filedialog.askopenfilename(initialdir=CWD)
     root.destroy()
     eel.updateDirectoryName(filename,elementID)()
     if elementID == 'imageInput': loadImage(filename)
@@ -154,13 +120,11 @@ def getFile(elementID):
 
 @eel.expose()
 def getDirectory(elementID):
-    ''' Select directory over Tkinter interface and file explorer. Directory is assigned an "elementID" in HTML interface. '''
     path = CWD
     if elementID == 'imageInput' or elementID == 'dataDirectory' or elementID == 'trainingImgDir': path = TRAIN_DATA_PATH
     if elementID =='SaveResultDir': path = SAVE_RES_PATH
     if elementID == 'modelSavingDir': path = SAVE_MODEL_PATH
-    root = Tk()
-    root.attributes("-topmost", True)
+    root = Tk(); root.attributes("-topmost", True)
     directory = filedialog.askdirectory(initialdir=path)
     root.destroy()
     eel.updateDirectoryName(directory,elementID)()
@@ -171,32 +135,26 @@ def getDirectory(elementID):
 def preProcSteps(argument, parameters):
     projectPath = parameters[0] if len(parameters) < 3 else str(parameters[0])
     aspectRatio = None if len(parameters) < 3 else (int(parameters[1]), int(parameters[2]))
-    print('\nStarting Preprocessing for ', argument[0])
-    print('Project Path: ', projectPath)
-    print('Parameters: ', parameters)
+    print('\nStarting Preprocessing for ', argument[0]); print('Project Path: ', projectPath); print('Parameters: ', parameters)
     preProcStart(argument=argument, projectPath=projectPath, aspectRatio=aspectRatio)
 
 # ======== Model Training ========
 
 @eel.expose()
-def trainModel(par): # CHECK IF PARAMETERS HAVE THE RIGHT FORM
+def trainModel(par):
     '''Execute model training. Parameters are passed from the HTML interface. '''
-    global history, trainedModel # expose training parameters to other functions)
+    global history, trainedModel
     print('Extracted Parameter Dictionary: ', par)
     trainedModel, history = trainCurModel(par=par)
     modelSavePath = join(str(par['modelSavingDir']), str(par['modelName']))
-    saveModel(modelSavePath)
-    saveModel(str(par['modelSavingDir']))
-    saveHistory(modelSavePath, history)
+    saveModel(modelSavePath); saveHistory(modelSavePath, history)
     eel.modelTrained()
     return trainedModel, history
-
 
 @eel.expose()
 def saveModel(path):
     success = False
-    if trainedModel is not None:
-        success = saveCurModel(model=trainedModel, modelPath=path)
+    if trainedModel is not None: success = saveCurModel(model=trainedModel, modelPath=path)
     if success: print('Successfully Saved the model.')
 
 # ======== Image Segmentation ========
@@ -214,25 +172,18 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.set():
-        print('Stopping Trigger')
-        # videoCam.stopTrigger()
-        triggerEvent.clear()
-    else: 
-        print('Start Trigger')
-        triggerEvent.set()
+    if triggerEvent.set():print('Stopping Trigger'); triggerEvent.clear()
+    else: print('Start Trigger'); triggerEvent.set()
 
 @eel.expose()
 def takePicture():
-    videoEvent.clear()
-    print('Cleared Video Event.')
+    videoEvent.clear(); print('Cleared Video Event.')
     pictureEvent.set()
 
 @eel.expose()
 def loadImage(path: str):
-    ''' Load image from input path. Path passed from HMTL surface.'''
-    global freezeFrame # current... = temporarily stored
-    freezeFrame, fileName = imageReader(targetPath=path, segment=True) # single file
+    global freezeFrame
+    freezeFrame, _ = imageReader(targetPath=path, segment=True) # single file
     print('Loading image from directory (with shape): ', freezeFrame.shape)
     transferImage = freezeFrame.copy()
     blob = reformatFrame(transferImage[0])
@@ -246,15 +197,13 @@ def saveSegResult(path: str):
 
 @eel.expose()
 def loadModel(path: str):
-    ''' Load Model from path to saved model file. '''
     global currentModel
     currentModel = loadCurModel(path=path) # expose current model to other functions
 
 @eel.expose()
 def segmentImage():
-    ''' Segment image with online segmentation'''
     global currentResultImg
-    currentResultImg, maxVB = singleImageSegmentation(image=freezeFrame, model=currentModel)
+    currentResultImg, _ = singleImageSegmentation(image=freezeFrame, model=currentModel)
     blob = reformatFrame(currentResultImg)
     eel.updateCanvas2(blob)()
 
@@ -268,19 +217,14 @@ def segmentStack(pathProj, nrEdges):
         pathRaw, _ = pathCreator(pathProj, grabData=True)
         rawImg, rawFileName = imageReader(pathRaw)
         preProcForSegment(imgArray=rawImg, projectPath=pathProj, fileNames=[rawFileName])
-    # imageStack, fileNames = imageReader(pathSeg, segment=True)
     wearCurve = segmentDataStack(dataPath=pathSeg, model=currentModel, nrEdges=int(nrEdges), savePath=pathProj)
     blob = reformatFrame(wearCurve)
     eel.updateCanvas2(blob)()
     
 @eel.expose()
 def segmentVideo():
-    if not streamSegEvent.is_set(): 
-        print('\nStarting Video Segmentation.')
-        streamSegEvent.set()  
-    else: 
-        print('\nStopping Video Segmentation.')
-        streamSegEvent.clear()
+    if not streamSegEvent.is_set(): print('\nStarting Video Segmentation.'); streamSegEvent.set()  
+    else: print('\nStopping Video Segmentation.'); streamSegEvent.clear()
 
 #  =========================================
 #  	   General Setup and Initialization		
@@ -288,48 +232,27 @@ def segmentVideo():
 
 def setup():
     print('\n----------------------- STARTING THREADS -----------------------')
-    cameraThread.start()
-    sleep(5)
-    pictureThread.start()
-    sleep(1)
-    videoThread.start()
-    sleep(1) # give setup some time
-    onlineSegThread.start()
-    sleep(1)
+    cameraThread.start(); sleep(1)
+    pictureThread.start(); sleep(1)
+    videoThread.start(); sleep(1)
+    onlineSegThread.start(); sleep(1)
     htmlThread.start()
-
 
 def shutdown():
     print('\n----------------------- SHUTTING DOWN PROGRAM -----------------------')
     stopEvent.set()
-    videoEvent.set()
-    streamSegEvent.set()
-    triggerEvent.set()
-    print('\t- Released Video Event.')
-    pictureEvent.set()
-    cameraThread.join(timeout=1)
-    print('\t- Released Picture Event.')
-    pictureThread.join(timeout=1)
-    print('\t- Stopped Picture Thread.')
-    videoThread.join(timeout=1) # THIS STEP TAKES AGES: most probable -> eel.updateImageSrc() tries to be executed, but is not reachable due to eel being closed
-    print('\t- Stopped Video Thread.')
-    onlineSegThread.join(timeout=1)
-    print('\t- Stopped Online Segmentation Thread.')
+    videoEvent.set(); streamSegEvent.set(); triggerEvent.set(); print('\t- Released Video Event.')
+    pictureEvent.set(); cameraThread.join(timeout=1); print('\t- Released Picture Event.')
+    pictureThread.join(timeout=1); print('\t- Stopped Picture Thread.')
+    videoThread.join(timeout=1); print('\t- Stopped Video Thread.')
+    onlineSegThread.join(timeout=1); print('\t- Stopped Online Segmentation Thread.')
     print('\t- Stopped all Threads.')
 
 if __name__ == '__main__':
-    # Thread 1: 
-    cameraThread = Thread(target=startCameraOPC, args=(IMG_ARRAY, stopEvent, triggerEvent))
-    # Thread 2:
-    pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent))
-    # Thread 3:
-    videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent))
-    # Thread 4:
-    onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent))
-    # Thread 5:
-    htmlThread = Thread(target=startHTML)
-
-    setup() # setting up system
-    htmlClosed.wait()
-    htmlThread.join()
-    shutdown() # shutting down system
+    cameraThread = Thread(target=startCameraOPC, args=(IMG_ARRAY, stopEvent, triggerEvent)) # Thread 1
+    pictureThread = Thread(target=sendPicture, args=(IMG_ARRAY, pictureEvent, stopEvent)) # Thread 2
+    videoThread = Thread(target=streamVid, args=(videoEvent, stopEvent)) # Thread 3
+    onlineSegThread = Thread(target=streamSeg, args=(streamSegEvent, stopEvent)) # Thread 4
+    htmlThread = Thread(target=startHTML) # Thread 5
+    setup() 
+    htmlClosed.wait(); htmlThread.join(); shutdown()

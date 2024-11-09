@@ -1,14 +1,5 @@
-''' ## General Utenesils and useful functions
-
-Accessible Functions:
-- imageReader()
-- saveImage()
-- displayImage()
-- setupData()
-'''
-
 from numpy import ndarray, expand_dims, array
-from os import listdir, remove, mkdir
+from os import listdir, remove, mkdir, getcwd
 from os.path import join, isfile, isdir, splitext, exists
 from tqdm import tqdm
 from cv2 import imread, imwrite, imencode, resize, INTER_LINEAR
@@ -27,18 +18,12 @@ from header import MODEL_FORMAT, PNG_SUFFIX, TIF_SUFFIX
 
 def pathCreator(projectPath: str, grabData: bool=False, token: str='img') -> str:
     '''Create paths to image and mask folder. Takes in path to project.'''
-    imgPath = join(projectPath, 'images')
-    maskPath = join(projectPath, 'masks')
-    if grabData:
-        imgPath = join(imgPath, token)
-        maskPath = join(maskPath, token)
+    imgPath = join(projectPath, 'images'); maskPath = join(projectPath, 'masks')
+    if grabData: imgPath = join(imgPath, token); maskPath = join(maskPath, token)
     return imgPath, maskPath
 
 def getTimeStamp() -> datetime:
-    ''' Returns current time stamp.'''
-    now = datetime.now()
-    timeStamp = now.strftime('%Y_%d%m_%H%M%S')
-    return timeStamp
+    return datetime.now().strftime('%Y_%d%m_%H%M%S')
 
 def reformatFrame(frame):
     ''' Reformats image and converts to utf-8 BLOB (binary large object).'''
@@ -57,17 +42,14 @@ def imageReader(targetPath: str, segment: bool = False) -> ndarray:
     Path can either specific file or project name. Function reads image from directory.
     The option "segment" tells, if expanded dimensions for the segementation are needed.
     '''
-    fileNames = []
+    fileNames = []; data=[]
     if isfile(path=str(targetPath)): # if path is file, read and return image
-        print('Path is file.\n')
         img = imread(targetPath, 0)
         img = expand_dims(img, 2)
         img = img[:,:,0][:,:,None]
         img = expand_dims(img,0)     
         return img, None
     elif isdir(s=str(targetPath)): # if path is directory, read and return stack of images
-        print('Path is Directory.')
-        data=[]
         for img_name in listdir(path=targetPath):
             name = splitext(img_name)[0]
             fileNames.append(name)
@@ -77,7 +59,6 @@ def imageReader(targetPath: str, segment: bool = False) -> ndarray:
                 img = expand_dims(img, 2) if segment else img
                 data.append(img)
         data = array(data, dtype='float')
-        print('Read out data shape: ',data.shape)
         return data, fileNames
 
 def setupFolder(folderPath: str, token: str = None) -> None:
@@ -90,10 +71,7 @@ def setupFolder(folderPath: str, token: str = None) -> None:
         print('\nSETUP FOLDER:\nClearing folder:\t', path_dir)
         try: 
             files = listdir(path_dir)
-            for file in files:
-                file_path = join(path_dir, file)
-                remove(file_path)
-            print('Removed all contents')
+            for file in files: file_path = join(path_dir, file); remove(file_path)
         except Exception as e: print(f"Error deleting files: {e}") 
     else:
         try: mkdir(path=path_dir, mode=777)
@@ -103,16 +81,19 @@ def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConv
     ''' Target path is either image or mask path. Also the image data and the folder name
     under which the images are saved in. The folder will be created from scratch.'''
     setupFolder(folderPath=pathTarget, token=token)
-    print('\nSAVING IMAGES at: ', pathTarget,token)
-    print('Saving Image Type:\t', suffix)
-    print('Nr. Image Names: ', len(names))
     for imgEntry in range(len(image)):
         filename=join(pathTarget, token, token+'_'+str(names[imgEntry])+suffix)
-        imwrite(filename, image[imgEntry]) # edit function
+        imwrite(filename, image[imgEntry])
     if maskConversion:  convertMaskFileType(projectPath=pathTarget, token=token)
 
+def saveTrigger(triggerList: list):
+    triggerPath = join(getcwd(), 'results','trigger',getTimeStamp())
+    if not exists(path=triggerPath): mkdir(path=triggerPath)
+    for idx in range(len(triggerList)):
+        filename = join(triggerPath, 'trigger_save_'+str(idx)+'_'+getTimeStamp()+PNG_SUFFIX)
+        imwrite(filename, triggerList[idx])
+
 def convertMaskFileType(projectPath, token):
-    ''' Takes in path '''
     sourceDirectory = join(projectPath, token)
     setupFolder(folderPath=projectPath, token=str(token+'_tif'))
     targetDirectroy = join(projectPath, token+'_tif')
@@ -125,28 +106,21 @@ def convertMaskFileType(projectPath, token):
             mask.save(targetPath, 'TIFF')
 
 def loadCurModel(path: str) -> Model:
-    ''' Loads model according to path to the saved model file.'''
-    model = load_model(path)
-    print(model.summary())
+    model = load_model(path); print(model.summary())
     return model
 
 def saveCurModel(model: Model, modelPath: str) -> bool:
-    ''' Save model to model directory with current timestamp.'''
     timeStamp = getTimeStamp() # name model according to time stamp
     dirPath = join(modelPath,'Model_Training_'+timeStamp+MODEL_FORMAT)
     print('\nSaving Model to:\n'+dirPath+'\n')
     model.save(dirPath)
     return True
 
-def setupProject():
-    return
-
 #  =========================================
 #  	            Data Functions		
 #  =========================================
 
 def displayImg(imgInput: ndarray) -> None:
-    ''' Plots images from stack of numpy image data.'''
     fig = plt.figure(figsize=(12, 10))
     for img in range(1, 13, +1):
         ax = fig.add_subplot(3, 4, img)
@@ -155,76 +129,35 @@ def displayImg(imgInput: ndarray) -> None:
 
 def setupData(projectPath: str, par: dict = None, split: bool = True, token: str = 'img') -> dict:
     ''' Takes in project path and returns data. If "split" is True, data is split into training and testing data set. Data is stored in dictionary with keywords:
-    'xTrain', 'yTrain', 'xTest', 'yTest'
-    If False returns image and mask data instead. '''
-
+    'xTrain', 'yTrain', 'xTest', 'yTest'. If False returns image and mask data instead. '''
     imgPath, maskPath = pathCreator(projectPath=projectPath, grabData=True, token=token)
     if token == 'final': maskPath= join(projectPath, 'masks', 'final_tif')
     images, imageNames = imageReader(imgPath)
-    # except:images = []
     if exists(maskPath): masks, maskNames = imageReader(maskPath)
-    else: 
-        masks = None
-        maskNames = None
-
+    else: masks = None; maskNames = None
     if split:
         xTrain, xTest, yTrain, yTest = train_test_split(images, masks, test_size=float(par['validationSize']), random_state=int(par['randomState']), shuffle=bool(par['randomSelection']))
-        data = {
-            'xTrain': xTrain,
-            'yTrain': yTrain,
-            'xTest': xTest,
-            'yTest': yTest
-        }
-        return data
-    else: 
-        # print('\nPrepared data without splitting: Image Data of Shape ', images.shape, ' and Mask Data of Shape ', masks.shape)
-        return images, masks, imageNames, maskNames
-
-def setupAugemented(projectPath: str, parDic: dict = None, split: bool = True):
-    horFlip = bool(parDic['horizontalFlip'])
-    verFlip = bool(parDic['verticalFlip'])
-    rot90deg = bool(parDic['rot90deg'])
-    
-    imgPath = join(projectPath, 'images', 'final')
-    maskPath = join(projectPath, 'masks', 'final_tif')
-
-    trainImgData = []
-    trainMaskData = []
-
-    if horFlip:
-        horFlipImgPath, horFlipMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
-        horFlipImg = [imread(filePath, 0) for filePath in horFlipImgPath]
-        horFlipMask = [imread(filePath, 0) for filePath in horFlipMaskPath]
-        trainImgData.append(horFlipImg)
-        trainMaskData.append(horFlipMask)
-
-    if verFlip:
-        verFlipImgPath, verFlipMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
-        verFlipImg = [imread(filePath, 0) for filePath in verFlipImgPath]
-        verFlipMask = [imread(filePath, 0) for filePath in verFlipMaskPath]
-        trainImgData.append(verFlipImg)
-        trainMaskData.append(verFlipMask)
-
-    if rot90deg:
-        rot90degImgPath, rot90degMaskPath = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
-        rot90degImg = [imread(filePath, 0) for filePath in rot90degImgPath]
-        rot90degMask = [imread(filePath, 0) for filePath in rot90degMaskPath]
-        trainImgData.append(rot90degImg)
-        trainMaskData.append(rot90degMask)
-
-    if split:
-        xTrain, xTest, yTrain, yTest = train_test_split(trainImgData, trainMaskData, test_size=float(parDic['validationSize']), random_state=int(parDic['randomState']), shuffle=bool(parDic['randomSelection']))
-        data = {
-                'xTrain': xTrain,
-                'yTrain': yTrain,
-                'xTest': xTest,
-                'yTest': yTest
-            }
-        return data
-    else: return None
-    
+        return {'xTrain': xTrain, 'yTrain': yTrain, 'xTest': xTest,'yTest': yTest}
+    else: return images, masks, imageNames, maskNames
 
 def getAugFilePaths(pathImg, pathMask, extension):
     imgPaths = [join(pathImg, f) for f in listdir(pathImg) if isfile(join(pathImg, f)) and f.endswith(extension)]
     maskPaths = [join(pathMask, f) for f in listdir(pathMask) if isfile(join(pathMask, f)) and f.endswith(extension)]
-    return imgPaths, maskPaths
+    imgNames = [name for name in listdir(path=pathImg)]; maskNames = [name for name in listdir(path=pathMask)]
+    return imgPaths, maskPaths, imgNames, maskNames
+
+def setupAugemented(projectPath: str, parDic: dict = None, split: bool = True):
+    horFlip = bool(parDic['horizontalFlip']); verFlip = bool(parDic['verticalFlip']); rot90deg = bool(parDic['rot90deg'])
+    imgPath = join(projectPath, 'images', 'final'); maskPath = join(projectPath, 'masks', 'final_tif')
+    trainImgData = []; trainMaskData = []; trainImgNames = []; trainMaskNames = []
+    augmentations = [(horFlip, '_flip_hor'), (verFlip, '_flip_ver'), (rot90deg, '_rot_90')]
+    for flag, suffix  in augmentations: 
+        if flag: 
+            augImgPath, augMaskPath, augImgNames, augMaskNames = getAugFilePaths(pathImg=imgPath, pathMask=maskPath, extension='')
+            augImg = [imread(filePath, 0) for filePath in augImgPath]; augMask = [imread(filePath, 0) for filePath in augMaskPath]
+            trainImgData.extend(augImg); trainMaskData.extend(augMask); trainImgNames.extend(augImgNames); trainMaskNames.extend(augMaskNames)
+    trainImgData = array(trainImgData, dtype='float'); trainMaskData = array(trainMaskData, dtype='float')
+    if split:
+        xTrain, xTest, yTrain, yTest = train_test_split(trainImgData, trainMaskData, test_size=float(parDic['validationSize']), random_state=int(parDic['randomState']), shuffle=bool(parDic['randomSelection']))
+        return {'xTrain': xTrain, 'yTrain': yTrain, 'xTest': xTest,'yTest': yTest}
+    else: return None

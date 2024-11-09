@@ -1,32 +1,19 @@
-''' ## Funtions for Training of New Model
-
-Accessible Functions:
-- createModel()
-- trainModel()
-- saveModel()
-'''
-
 from modelArchitecture import UNet
 from dataPreparation import resizeAll
 from generalUtensils import setupData, getTimeStamp, setupAugemented
 from header import CWD
 
 from keras.models import Model
-from keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard
+from keras.callbacks import EarlyStopping, ModelCheckpoint
 from os.path import join
-from tensorboard import program
 from matplotlib import pyplot as plt
-from numpy import expand_dims
 from pandas import DataFrame
 
-import webbrowser
 
 # ======== Model Initialization ========
 
 def createModel(inputShape, par) -> Model:
-    model = UNet.unet_ehsan(inputShape=inputShape)
-    # model = UNet.unet_first_iteration(inputShape=inputShape,n_classes=int(par['nrChannels']))
-    return model
+    return UNet.unet_ehsan(inputShape=inputShape)
 
 # ======== Model Training ========
 
@@ -34,46 +21,23 @@ def trainCurModel(par: dict) -> Model:
     ''' Train model on training data. Takes in model, training data, and training parameters.
     Return trained model and training history'''
     global epochs, batch_size, aspectRatio, channel, log_dir
-
     inputShape = (int(par['imageHeight']), int(par['imageWidth']), int(par['nrChannels']))
-    aspectRatio = inputShape[:2]
-    channel = inputShape[2]
-    print('Aspect Ration: ',aspectRatio,' and Number of Channels: ', channel)
-
-    modelName = str(par['modelName'])
-    projectPath = str(par['trainingImgDir'])
-    modelSavePath = str(par['modelSavingDir'])
-
-    batch_size=int(par['batchSize'])
-    epochs=int(par['nrEpochs'])
-    shuffle=bool(par['shuffleTrain'])
-    augmentation = bool(par['selectAug'])
-
+    aspectRatio = inputShape[:2]; channel = inputShape[2]
+    modelName = str(par['modelName']); projectPath = str(par['trainingImgDir']); modelSavePath = str(par['modelSavingDir'])
+    batch_size=int(par['batchSize']); epochs=int(par['nrEpochs']); shuffle=bool(par['shuffleTrain']); augmentation = bool(par['selectAug'])
     if augmentation: trainData = setupAugemented(projectPath=projectPath, parDic=par, split=True)
     else: trainData = setupData(projectPath=projectPath, par=par, split=True, token='final') 
     model = createModel(inputShape=inputShape, par=par)
-    
-    # transfer learning
 
-    # Callback Parameter
-    monitor = 'val_loss'
-    earlyStopPatience = int(par['earlyStopping'])
+    monitor = 'val_loss'; earlyStopPatience = int(par['earlyStopping']) # Callback Parameter
     checkPointPath = join(modelSavePath,modelName +'_best')
     log_dir = join(CWD,'logs','fit',str(getTimeStamp()))
-
-    # Callback Setup
     earlyStops = EarlyStopping(monitor=monitor, patience=earlyStopPatience, restore_best_weights=True)
     checkpoints = ModelCheckpoint(filepath=checkPointPath, monitor=monitor, verbose=True, save_best_only=True, mode='auto', save_freq='epoch')
-    tensorboardCallback = TensorBoard(log_dir=log_dir, histogram_freq=1)
-    callbacks = [earlyStops, checkpoints, tensorboardCallback]
+    callbacks = [earlyStops, checkpoints]
 
     x ,y, _ = resizeAll(img=trainData['xTrain'], aspectRatio=aspectRatio, mask=trainData['yTrain']/255.0, saveProgress=False)
-    print('Input Shape: ', x.shape)
-    # if augmentation: model, history = augementImage(model=model, trainData=trainData, par=par, callbacks=callbacks)
-    # else: 
-    history = model.fit(x=x, y=y, batch_size=batch_size, epochs=epochs, validation_data=(trainData['xTest'], trainData['yTest']), 
-                            shuffle=shuffle, callbacks=callbacks, verbose = True)
-
+    history = model.fit(x=x, y=y, batch_size=batch_size, epochs=epochs, validation_data=(trainData['xTest'], trainData['yTest']), shuffle=shuffle, callbacks=callbacks, verbose = True)
     print('Model Training Finished successfully.')
     return model, history
 
@@ -81,7 +45,7 @@ def trainCurModel(par: dict) -> Model:
 # ======== Model Training Evaluation ========
 
 def evalModelTraining(history):
-    fig ,ax = plt.subplots(3, 1, figsize=(8,12))
+    _ ,ax = plt.subplots(3, 1, figsize=(8,12))
     epochs = range(1, len(loss)+1)
 
     # Training Loss and Validation Loss
@@ -110,22 +74,9 @@ def evalModelTraining(history):
     ax[2].set_title('IoU (Intersetion over Union)')
     ax[2].set_xlabel('Epochs')
     ax[2].set_ylabel('Loss')
-
-    plt.tight_layout()
-    plt.show()
-
-def displayTensorboard(url):
-    try:
-        tb = program.Tensorboard()
-        tb.configure(argv=[None, '--logdir', log_dir])
-        url = tb.launch()
-        print(f"Tensorflow listening on {url}")
-        webbrowser.open(url)
-    except Exception as e:
-        print('Cannot start tensorboard: ',e)
+    plt.tight_layout(); plt.show()
 
 def saveHistory(path, history):
     df_history = DataFrame(history.history)
     hist_csv_file = join(path, 'hist_'+getTimeStamp()+'.csv')
-    with open(hist_csv_file, mode='w') as f:
-        df_history.to_csv(f)
+    with open(hist_csv_file, mode='w') as f: df_history.to_csv(f)
