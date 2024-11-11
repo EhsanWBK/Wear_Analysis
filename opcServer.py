@@ -76,6 +76,11 @@ class Baumer():
         self.camera = neoapi.Cam()
         self.camera.Connect()
         print('Camera connected.')
+        if self.camera.f.PixelFormat.GetEnumValueList().IsReadable('BGR8'):
+            self.camera.f.PixelFormat.SetString('BGR8'); print('BGR8')
+        elif self.camera.f.PixelFormat.GetEnumValueList().IsReadable('Mono8'):
+            self.camera.f.PixelFormat.SetString('Mono8'); print('Mono8')
+        else: print('No supported pixel format')
         self.camera.f.PixelFormat.SetString(CAM_PIXEL_FORMAT)
         self.camera.f.ExposureTime.Set(10000)
         self.camera.f.AcquisitionFrameRateEnable.value = True
