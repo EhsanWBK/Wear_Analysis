@@ -145,7 +145,6 @@ def castImage():
                 imgString = cam.getFrame()
                 camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
-                print(triggerSignal)
             cam.triggerModeOn()
 
             while triggerSignal:
