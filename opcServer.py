@@ -124,7 +124,7 @@ class Baumer():
         elif triggerImg.shape == (2048, 2448, 1): 
             ret, jpeg = cv2.imencode('.jpg', triggerImg)
             jpegString = base64.b64encode(jpeg).decode('utf-8')
-            self.triggerModeOff()
+            # self.triggerModeOff()
             return True, jpegString
         
 def castImage():
