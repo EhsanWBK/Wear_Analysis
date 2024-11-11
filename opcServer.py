@@ -65,7 +65,7 @@ class CamServer:
         
     def checkTrigger(self):
         trigger = self.triggerSetNode.get_value()
-        if trigger: print('Trigger Val: ', trigger)
+        # if trigger: print('Trigger Val: ', trigger)
         return trigger
 
     def dummyStream(self, nr):
@@ -118,7 +118,7 @@ class Baumer():
     def checkTrigger(self):
         # self.triggerModeOn()
         triggerImg = self.camera.GetImage().GetNPArray()
-        print(triggerImg.shape)
+        # print(triggerImg.shape)
         if triggerImg.shape == (0,0,1):
             return False, None
         elif triggerImg.shape == (2048, 2448, 1): 
@@ -158,7 +158,7 @@ def castImage():
                     while triggerSet: 
                         # print('Trigger Set: ', triggerSet)
                         triggerSet, imgString = cam.checkTrigger()
-                        # camServer.streamImg(imgString=imgString, trigger=True)
+                        camServer.streamImg(imgString=imgString, trigger=True)
                 triggerSignal = camServer.checkTrigger()
             cam.triggerModeOff()
     finally:
