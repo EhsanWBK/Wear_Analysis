@@ -1,6 +1,5 @@
 from numpy import ndarray, unique, linspace, expand_dims, array, squeeze, rot90, eye, float32
 from cv2 import resize, INTER_LINEAR,  flip, MOTION_TRANSLATION, TERM_CRITERIA_EPS, TERM_CRITERIA_COUNT, INTER_LINEAR, WARP_INVERSE_MAP, findTransformECC, warpAffine
-from copy import deepcopy
 from os.path import exists
 from os import makedirs
 from tensorflow import config as cfg
@@ -63,10 +62,10 @@ def augementAll(img: ndarray, mask: ndarray, projectPath: str, fileNames: str, t
     if not exists(path=maskPath): makedirs(maskPath)
     imgList = []; maskList = []; imgNamesList = []; maskNamesList = []
     augmentations = [("_original", lambda x: x), ("_flip_hor", lambda x: flip(x, 1)), ("_flip_ver", lambda x: flip(x, 0)), ("_rot_90", lambda x: rot90(x))]
-    for i, (img, mask, imgName, maskName) in enumerate(zip(img, mask, fileNames[0], fileNames[1])):
+    for i, (imgData, maskData, imgName, maskName) in enumerate(zip(img, mask, fileNames[0], fileNames[1])):
         for suffix, augmentation in augmentations:
-            imgList.append(augmentation(img)); maskList.append(augmentation(mask))
-            imgNamesList.append(f'{img}{suffix}'); maskNamesList.append(f'{mask}{suffix}')
+            imgList.append(augmentation(imgData)); maskList.append(augmentation(maskData))
+            imgNamesList.append(f'{imgName}{suffix}'); maskNamesList.append(f'{maskName}{suffix}')
     if saveProgress:
         saveFrame(image=imgList, pathTarget=imgPath, names=imgNamesList, token=token)
         saveFrame(image=maskList, pathTarget=maskPath, names=maskNamesList, token=token, maskConversion=True)
@@ -139,7 +138,7 @@ def preProcForSegment(imgArray: ndarray, projectPath: str, fileNames:list, aspec
         upscaledFrame = resize(img, (2048,2448), interpolation=INTER_LINEAR)
         segmentFrame = preProcFromCamera(frame=upscaledFrame, aspectRatio=aspectRatio, channel=channel)
         segmentImg.append(segmentFrame)
-    saveFrame(pathTarget=imgPath, image=segmentImg, fileNames=fileNames[0], token='seg')
+    saveFrame(pathTarget=imgPath, image=segmentImg, names=fileNames[0], token='seg')
 
 def preProcFromDataStorage(imgArray: ndarray, saveProgress: bool = False, segment: bool = True):
     ''' Takes in an array from the data storage and returns either a (1,imWidth, imHeight, channel) array for segmentation
@@ -175,6 +174,6 @@ def preProcFromCamera(frame: ndarray, aspectRatio: tuple = (512,512), channel: i
     ''' Takes in an array of shape (2048,2448,3) from the camera live stream. 
     Returns (1,imWidth, imHeight, channel) array for segmentation.
     Applies for single images only. For multiple images, iterate over the function. '''
-    frameCrop = cropImage(frame)
-    frameResize = resizeSingleFrame(frame=frameCrop, aspectRatio=aspectRatio, channel=channel)
+    frameCrop = cropImage(array(expand_dims(frame,0)))
+    frameResize = resizeSingleFrame(frame=frameCrop[0], aspectRatio=aspectRatio, channel=channel)
     return frameResize

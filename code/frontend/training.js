@@ -85,15 +85,16 @@ function py_train() {
 	eel.trainModel(parDict)();
 }
 
-function py_saveModel(){ eel.saveModel(document.getElementById('modelSavingDir')); }
-	
-eel.expose(displayTensorboard);
-function displayTensorboard(url) {
-	window.open(url,"_blank").focus();
+eel.expose(updateResults);
+function updateResults(loss, acc, iou, pr, f1){
+	lossDisp.src = "data:image/jpeg;base64," + loss;
+	accDisp.src = "data:image/jpeg;base64," + acc;
+	iouDisp.src = "data:image/jpeg;base64," + iou;
+	prDisp.src = "data:image/jpeg;base64," + pr;
+	f1Disp.src = "data:image/jpeg;base64," + f1;
 }
 
-eel.expose(modelTrained);
-function modelTrained() {
-	if (checkToTensorBoard.checked){ displayTensorboard(); }
-	buttonSaveModel.disabled = false;
+function py_displayResults(){
+	eel.displayResults()();
 }
+

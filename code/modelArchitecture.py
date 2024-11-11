@@ -1,6 +1,7 @@
 from tensorflow import keras
 from keras.models import Model
 from keras.layers import Input, concatenate, Conv2D, Conv2DTranspose, Dropout, MaxPooling2D
+from keras.metrics import TruePositives, TrueNegatives, FalsePositives, FalseNegatives
 
 class UNet:
     ''' ## Inspiration for the UNet-Model
@@ -133,6 +134,9 @@ class UNet:
         # Outout Layer
         outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
         model = Model(inputs=[inputs], outputs=[outputs])
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        # model.compile(optimizer='adam', loss='binary_crossentropy', 
+        #               metrics=['accuracy', keras.metrics.BinaryIoU(target_class_ids=[0,1])])
+        # model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy', TruePositives(), TrueNegatives(), FalsePositives(), FalseNegatives()])
         model.summary()
         return model

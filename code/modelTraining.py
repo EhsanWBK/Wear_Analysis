@@ -5,9 +5,10 @@ from header import CWD
 
 from keras.models import Model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
+from os import listdir
 from os.path import join
 from matplotlib import pyplot as plt
-from pandas import DataFrame
+from pandas import DataFrame, read_csv
 
 
 # ======== Model Initialization ========
@@ -44,39 +45,65 @@ def trainCurModel(par: dict) -> Model:
 
 # ======== Model Training Evaluation ========
 
-def evalModelTraining(history):
-    _ ,ax = plt.subplots(3, 1, figsize=(8,12))
-    epochs = range(1, len(loss)+1)
-
-    # Training Loss and Validation Loss
-    loss = history.history['loss']
-    val_loss = history.history['val_los']
-    ax[0].plot(epochs, loss, 'y', label='Training Loss')
-    ax[0].plot(epochs, val_loss, 'r', label='Validation Loss')  
-    ax[0].set_title('Training adn Validation Loss')
-    ax[0].set_xlabel('Epochs')
-    ax[0].set_ylabel('Loss')
-
-    # Training Accuracy and Validation Accuracy
-    acc = history.history['categorical_accuracy']
-    val_acc = history.history['val_categorical_accuracy']
-    ax[1].plot(epochs, acc, 'y', label='Training Accuracy')
-    ax[1].plot(epochs, val_acc, 'r', label='Validation Accuracy')  
-    ax[1].set_title('Training Accuracy and Validation Accuracy')
-    ax[1].set_xlabel('Epochs')
-    ax[1].set_ylabel('Loss')
-
-    # Training IoU and Validation IoU
-    iou = history.history['one_hot_io_u']
-    val_iou = history.history['val_one_hot_io_u']
-    ax[2].plot(epochs, iou, 'y', label='Training IoU')
-    ax[2].plot(epochs, val_iou, 'r', label='Validation IoU')  
-    ax[2].set_title('IoU (Intersetion over Union)')
-    ax[2].set_xlabel('Epochs')
-    ax[2].set_ylabel('Loss')
-    plt.tight_layout(); plt.show()
-
 def saveHistory(path, history):
     df_history = DataFrame(history.history)
     hist_csv_file = join(path, 'hist_'+getTimeStamp()+'.csv')
     with open(hist_csv_file, mode='w') as f: df_history.to_csv(f)
+
+def loadHistory(path):
+    return read_csv(path)
+
+def plotResult(argument: str, result: DataFrame, validation: DataFrame, savePath: str):
+    fig = plt.figure(figsize=(10,6))
+    plt.plot(result.to_list(), label='Train')
+    plt.plot(validation.to_list(), label='Validation')
+    plt.title(argument); plt.xlabel('Epoch'); plt.ylabel(argument); plt.legend(); plt.tight_layout()
+    plt.savefig(join(savePath, argument+'.jpg'))
+    return fig
+
+def pltPRCurve(prec: DataFrame, rec: DataFrame, precVal: DataFrame, recVal: DataFrame, savePath: str):
+    fig = plt.figure(figsize=(10,6))
+    plt.plot(rec.to_list(), prec.to_list(), label='Precision-Recall Curve')
+    plt.plot(recVal.to_list(), precVal.to_list(), label='Precision-Recall Validation Curve')
+    plt.title('Precision-Recall Curve'); plt.xlabel('Recall'); plt.ylabel('Precision'); plt.legend(); plt.tight_layout()
+    plt.savefig(join(savePath, 'PrecRecCurve.jpg'))
+    return fig
+
+def calculateIoU(tp: DataFrame, fp: DataFrame, fn: DataFrame):
+    return (tp/(tp+fp+fn))
+
+def calculatePrec(tp: DataFrame, fp: DataFrame):
+    return (tp/(tp+fp))
+
+def calculateRec(tp: DataFrame, fn: DataFrame):
+    return (tp/(tp+fn))
+
+def calculateF1(prec: DataFrame, rec: DataFrame):
+    return ((2*prec*rec)/(prec+rec))
+
+def evalModelTraining(savePath):
+    historyPath = [join(savePath, file) for file in listdir(savePath) if file.endswith('.csv')]
+    df = loadHistory(historyPath[0])
+
+    tp=df['true_positives']; tn=df['true_negatives']; fp=df['false_positives']; fn=df['false_negatives']
+    tpVal=df['val_true_positives']; tnVal=df['val_true_negatives']; fpVal=df['val_false_positives']; fnVal=df['val_false_negatives']
+    prec = calculatePrec(tp=tp, fp=fp)
+    precVal = calculatePrec(tp=tpVal, fp=fpVal)
+    rec = calculateRec(tp=tp, fn=fn)
+    recVal = calculateRec(tp=tpVal, fn=fnVal)
+
+    iou = calculateIoU(tp=tp,fp=fp,fn=fn)
+    iouVal = calculateIoU(tp=tpVal, fp=fpVal, fn=fnVal)
+    f1 = calculateF1(prec=prec, rec=rec)
+    f1Val = calculateF1(prec=precVal, rec=recVal)
+
+    # Loss Evaluation
+    lossFig = plotResult('Loss',df['loss'], df['val_loss'],savePath=savePath)
+    # Accuracy Evaluation
+    accFig = plotResult('Accuracy', df['accuracy'], df['val_accuracy'], savePath=savePath)
+    # IoU Evaluation
+    iouFig = plotResult('Intersection over Union (IoU)',iou, iouVal, savePath=savePath)
+    # F1 Evaluation
+    f1Fig = plotResult('F1-Score', f1, f1Val, savePath=savePath)
+    # Preciscion-Recall Curve
+    prCurve = pltPRCurve(prec=prec, precVal=precVal, rec=rec, recVal=recVal, savePath=savePath)

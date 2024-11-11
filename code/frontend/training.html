@@ -206,18 +206,10 @@
 					</table>
 					<br> <hr />
 					<center> <h2>Start Training</h2> </center>
-					<table style="width: 40%; padding-left: 30pt; border-left: 600pt;">
-						<tr><p>Start new training and display training restults to Tensorboard Application in the web-browser.</p></center></tr>
-						<tr>
-							<td><input type="checkbox" id="toTensorBoard" checked></td> 
-							<td><label for="toTensorBoard"><b>Result to Tensorboard</b></label></td>
-							<!-- <button onclick="goToTensorboard()" id="tensorflowButton" style="width: 180pt; height:40pt; font-size: 16px; background-color: #004A94;">Result to Tensorboard</a></button> -->
-						</tr>
-					</table>
-					<br>
 					<table style="width: 100%; padding-left: 5pt; border-left: 600pt;">
 						<td align="center"> <button onclick="py_train()" style="width: 180pt; height:40pt; font-size: 16px; background-color: #004A94;">Train New Model</button> </td>
-						<td align="center"> <button onclick="py_saveModel()" id="saveModel" style="width: 180pt; height:40pt; font-size: 16px; background-color: #004A94;">Save Trained Model</a></button> </td>
+						<td align="center"> <button onclick="window.location.href='trainingEval.html'; py_displayResults()" id="displayResult" style="width: 180pt; height:40pt; font-size: 16px; background-color: #004A94;">Display Result</a></button> </td>
+						<!-- <td align="center"> <button onclick="py_saveModel()" id="saveModel" style="width: 180pt; height:40pt; font-size: 16px; background-color: #004A94;">Save Trained Model</a></button> </td> -->
 					</table>
 					<br>
 				</tr>

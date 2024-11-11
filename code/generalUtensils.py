@@ -10,7 +10,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from keras.models import load_model, Model
 
-from header import MODEL_FORMAT, PNG_SUFFIX, TIF_SUFFIX
+from header import MODEL_FORMAT, PNG_SUFFIX, TIF_SUFFIX, TRIGGER_PATH
 
 #  =========================================
 #  	           General Functions		
@@ -87,11 +87,12 @@ def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConv
     if maskConversion:  convertMaskFileType(projectPath=pathTarget, token=token)
 
 def saveTrigger(triggerList: list):
-    triggerPath = join(getcwd(), 'results','trigger',getTimeStamp())
+    triggerPath = join(TRIGGER_PATH, getTimeStamp())
     if not exists(path=triggerPath): mkdir(path=triggerPath)
     for idx in range(len(triggerList)):
         filename = join(triggerPath, 'trigger_save_'+str(idx)+'_'+getTimeStamp()+PNG_SUFFIX)
         imwrite(filename, triggerList[idx])
+    return triggerPath
 
 def convertMaskFileType(projectPath, token):
     sourceDirectory = join(projectPath, token)

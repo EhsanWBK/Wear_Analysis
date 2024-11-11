@@ -12,7 +12,7 @@ from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurMod
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
 from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
 from opcCon import CamClient
-from modelTraining import trainCurModel, saveHistory
+from modelTraining import trainCurModel, saveHistory, evalModelTraining
 from header import *
 
 #  =========================================
@@ -38,7 +38,9 @@ def startCameraOPC(sharedArray, stopEvent, triggerMode):
                 cameraClient.receivedTrigger()
                 triggerTemp.append(streamFrame)
                 sleep(1) # CHECK WITH REMOVED BUFFER
-            if not triggerMode.is_set() and triggerTemp != []: saveTrigger(triggerTemp); triggerTemp = []
+            if not triggerMode.is_set() and triggerTemp != []: 
+                saveFolder = saveTrigger(triggerTemp) 
+                segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder); triggerTemp = []
     finally: cameraClient.stopClient()
 
 # Thread 2:
@@ -135,7 +137,7 @@ def getDirectory(elementID):
 def preProcSteps(argument, parameters):
     projectPath = parameters[0] if len(parameters) < 3 else str(parameters[0])
     aspectRatio = None if len(parameters) < 3 else (int(parameters[1]), int(parameters[2]))
-    print('\nStarting Preprocessing for ', argument[0]); print('Project Path: ', projectPath); print('Parameters: ', parameters)
+    print('\nStarting Preprocessing for ', argument[0]); print('Project Path: ', projectPath)
     preProcStart(argument=argument, projectPath=projectPath, aspectRatio=aspectRatio)
 
 # ======== Model Training ========
@@ -148,6 +150,7 @@ def trainModel(par):
     trainedModel, history = trainCurModel(par=par)
     modelSavePath = join(str(par['modelSavingDir']), str(par['modelName']))
     saveModel(modelSavePath); saveHistory(modelSavePath, history)
+    evalModelTraining(modelSavePath)
     eel.modelTrained()
     return trainedModel, history
 
@@ -156,6 +159,11 @@ def saveModel(path):
     success = False
     if trainedModel is not None: success = saveCurModel(model=trainedModel, modelPath=path)
     if success: print('Successfully Saved the model.')
+
+@eel.expose()
+def displayResults(model, savePath):
+    model = None
+    savePath = None
 
 # ======== Image Segmentation ========
 
