@@ -56,9 +56,7 @@ class CamServer:
         finally: print('Server Offline'); return False
         
     def checkTrigger(self):
-        trigger = self.triggerSetNode.get_value()
-        print('Trigger Val: ', trigger)
-        return trigger
+        return self.triggerSetNode.get_value()
 
     def dummyStream(self, nr):
         self.dummyNr.set_value(nr)
