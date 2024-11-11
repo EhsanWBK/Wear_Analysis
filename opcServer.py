@@ -116,7 +116,7 @@ class Baumer():
         self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
 
     def checkTrigger(self):
-        self.triggerModeOn()
+        # self.triggerModeOn()
         triggerImg = self.camera.GetImage().GetNPArray()
         print(triggerImg.shape)
         if triggerImg.shape == (0,0,1):
@@ -144,6 +144,7 @@ def castImage():
                 camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
             cam.triggerModeOn()
+            sleep(1)
             while triggerSignal:
                 triggerSet, imgString = cam.checkTrigger()
                 if triggerSet: 
