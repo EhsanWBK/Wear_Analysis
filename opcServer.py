@@ -15,8 +15,8 @@ except:
 
 
 # Server setup
-ENDPOINT = "opc.tcp://141.3.142.81:12345" # CHANGE???
-# ENDPOINT = 'opc.tcp://127.0.0.1:12345'
+# ENDPOINT = "opc.tcp://141.3.142.81:12345" # CHANGE???
+ENDPOINT = 'opc.tcp://127.0.0.1:12345'
 NAMESPACE = 'CameraSpace'
 
 # Camera setup
@@ -193,18 +193,18 @@ def dummyServer():
         ret2, jpeg2 = cv2.imencode('.jpg', dummyImage2)
         jpegString2 = base64.b64encode(jpeg2).decode('utf-8')
         while True:
-            camServer.streamImg(jpegString)
+            camServer.streamImg(jpegString, trigger=False)
             sleep(1)
-            camServer.streamImg(jpegString2)
+            camServer.streamImg(jpegString2, trigger=False)
             sleep(1)
     finally:
         serverOnline = camServer.stopServer()
 
 # hostServer()
-# dummyServer()
+dummyServer()
 
-if __name__ == '__main__':
-    # camThread = th.Thread(target=castImage, args=(stopEvent, triggerSet))
-    # checkTrigger = th.Thread(target=checkTrigger, args=(stopEvent, triggerSet))
-    castImage()
+# if __name__ == '__main__':
+#     # camThread = th.Thread(target=castImage, args=(stopEvent, triggerSet))
+#     # checkTrigger = th.Thread(target=checkTrigger, args=(stopEvent, triggerSet))
+#     castImage()
     
