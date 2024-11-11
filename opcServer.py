@@ -156,6 +156,7 @@ def castImage():
                         camServer.streamImg(imgString=imgString, trigger=True)
                     triggerSignal = camServer.checkTrigger()
                 cam.triggerModeOff()
+                print('Trigger Signal: ', triggerSignal)
     finally:
         triggerMode = cam.triggerModeOff()
         serverOnline = camServer.stopServer()
