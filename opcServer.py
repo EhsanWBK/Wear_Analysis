@@ -47,25 +47,17 @@ class CamServer:
 
     def startServer(self):
         try: self.server.start()
-        except: 
-            print('Failed to Start the Server')
-            return False
-        finally: 
-            print('Server Online')
-            return True
+        except: print('Failed to Start the Server'); return False
+        finally: print('Server Online'); return True
     
     def stopServer(self):
         try: self.server.stop()
-        except: 
-            print('Failed to Stop the Server')
-            return True
-        finally: 
-            print('Server Offline')
-            return False
+        except: print('Failed to Stop the Server'); return True
+        finally: print('Server Offline'); return False
         
     def checkTrigger(self):
         trigger = self.triggerSetNode.get_value()
-        # if trigger: print('Trigger Val: ', trigger)
+        print('Trigger Val: ', trigger)
         return trigger
 
     def dummyStream(self, nr):
@@ -162,6 +154,7 @@ def castImage():
                     triggerSignal = camServer.checkTrigger()
                 cam.triggerModeOff()
     finally:
+        triggerMode = cam.triggerModeOff()
         serverOnline = camServer.stopServer()
 
 def hostServer():
