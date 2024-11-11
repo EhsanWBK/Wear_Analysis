@@ -122,8 +122,10 @@ class Baumer():
         if triggerImg.shape == (0,0,1):
             return False, None
         elif triggerImg.shape == (2048, 2448, 1): 
-            ret, jpeg = cv2.imencode('.jpg', triggerImg)
-            jpegString = base64.b64encode(jpeg).decode('utf-8')
+            jpegString = None
+            print('Trigger received.')
+            # ret, jpeg = cv2.imencode('.jpg', triggerImg)
+            # jpegString = base64.b64encode(jpeg).decode('utf-8')
             # self.triggerModeOff()
             return True, jpegString
         
@@ -139,10 +141,11 @@ def castImage():
     print('Trigger Signal: ', triggerSignal)
     try:
         while True:
-            while not triggerSignal:
+            if not triggerSignal:
                 imgString = cam.getFrame()
                 camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
+                print(triggerSignal)
             cam.triggerModeOn()
 
             while triggerSignal:
@@ -154,9 +157,9 @@ def castImage():
                 #     print('Trigger Set: ', triggerSet)
                 #     triggerSet, imgString = cam.checkTrigger()
                     while triggerSet: 
-                        print('Trigger Set: ', triggerSet)
+                        # print('Trigger Set: ', triggerSet)
                         triggerSet, imgString = cam.checkTrigger()
-                        camServer.streamImg(imgString=imgString, trigger=True)
+                        # camServer.streamImg(imgString=imgString, trigger=True)
                 triggerSignal = camServer.checkTrigger()
             cam.triggerModeOff()
     finally:
