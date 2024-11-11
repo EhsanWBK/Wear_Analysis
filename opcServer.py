@@ -58,13 +58,6 @@ class CamServer:
     def checkTrigger(self):
         return self.triggerSetNode.get_value()
 
-    def dummyStream(self, nr):
-        self.dummyNr.set_value(nr)
-
-    def getDummy(self):
-        sleep(1)
-        return self.dummyNr.get_value()
-
     def streamImg(self, imgString, trigger):
         self.imgNode.set_value(DataValue(Variant(imgString, VariantType.String)))
         if trigger: self.triggerImgNode.set_value(DataValue(Variant(trigger,VariantType.Boolean)))
@@ -111,25 +104,16 @@ class Baumer():
         self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
 
     def checkTrigger(self):
-        # self.triggerModeOn()
         triggerImg = self.camera.GetImage().GetNPArray()
-        # print(triggerImg.shape)
-        if triggerImg.shape == (0,0,1):
-            return False, None
+        if triggerImg.shape == (0,0,1): return False, None
         elif triggerImg.shape == (2048, 2448, 1): 
             print('Trigger received.')
             ret, jpeg = cv2.imencode('.jpg', triggerImg)
             jpegString = base64.b64encode(jpeg).decode('utf-8')
-            # self.triggerModeOff()
             return True, jpegString
         
 def castImage():
-    # stream image
-    # if trigger mode is set: turn off camera mode, turn on trigger mode
-    # if trigger mode is unset: turn on camera mode, turn off trigger mode
-    # return image string OR no image
-    cam = Baumer()
-    camServer = CamServer()
+    cam = Baumer(); camServer = CamServer()
     serverOnline = camServer.startServer()
     triggerSignal = camServer.checkTrigger()
     print('Trigger Signal: ', triggerSignal)
@@ -140,75 +124,15 @@ def castImage():
                 camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
             elif triggerSignal:
-                print('Received Trigger Signal')
-                cam.triggerModeOn()
+                cam.triggerModeOn(); print('Received Trigger Signal')
                 while triggerSignal:
                     triggerSet, imgString = cam.checkTrigger()
-                    if triggerSet: 
-                        print('Streaming Image')
-                        # camServer.streamImg(imgString=imgString, trigger=True)
-                    # while triggerSet: 
-                    #     print('Trigger Set: ', triggerSet)
-                    #     triggerSet, imgString = cam.checkTrigger()
-                        # while triggerSet: 
-                            # print('Trigger Set: ', triggerSet)
-                        # triggerSet, imgString = cam.checkTrigger()
-                        camServer.streamImg(imgString=imgString, trigger=True)
+                    if triggerSet: camServer.streamImg(imgString=imgString, trigger=True)
                     triggerSignal = camServer.checkTrigger()
-                cam.triggerModeOff()
-                print('Trigger Signal: ', triggerSignal)
+                cam.triggerModeOff(); print('Trigger Signal: ', triggerSignal)
     finally:
         triggerMode = cam.triggerModeOff()
         serverOnline = camServer.stopServer()
 
-def hostServer():
-    ''' Endless loop. Hosts server and streams image data. '''
-    try:
-        print('Start Server')
-        dummyIterate = 0
-        camServer = CamServer()
-        cam = Baumer()
-        serverOnline = camServer.startServer()
-        if cam == None: print('Camera is None')
-        while True:
-            imgString = cam.getFrame() # retreive image from camera stream
-            camServer.streamImg(imgString)
-            # camServer.dummyStream(dummyIterate)
-            # print(camServer.getDummy())
-            # dummyIterate +=1
-    finally:
-        serverOnline = camServer.stopServer()
-
-def dummyServer():
-    from os import getcwd
-    from os.path import join
-    from cv2 import imread
-    try:
-        camServer = CamServer()
-        camServer.startServer()
-        print('Start Server')
-        dummyPath = join(getcwd(),'dummyImg.jpg') # path to dummy image
-        dummyImage = imread(dummyPath, 0)
-        dummyPath2 = join(getcwd(),'dummyImg2.jpg') # path to dummy image
-        dummyImage2 = imread(dummyPath2, 0)
-
-        ret, jpeg = cv2.imencode('.jpg', dummyImage)
-        jpegString = base64.b64encode(jpeg).decode('utf-8')
-        ret2, jpeg2 = cv2.imencode('.jpg', dummyImage2)
-        jpegString2 = base64.b64encode(jpeg2).decode('utf-8')
-        while True:
-            camServer.streamImg(jpegString, trigger=False)
-            sleep(1)
-            camServer.streamImg(jpegString2, trigger=False)
-            sleep(1)
-    finally:
-        serverOnline = camServer.stopServer()
-
-# hostServer()
-# dummyServer()
-
-if __name__ == '__main__':
-    # camThread = th.Thread(target=castImage, args=(stopEvent, triggerSet))
-    # checkTrigger = th.Thread(target=checkTrigger, args=(stopEvent, triggerSet))
-    castImage()
+if __name__ == '__main__': castImage()
     
