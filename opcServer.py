@@ -145,22 +145,23 @@ def castImage():
                 imgString = cam.getFrame()
                 camServer.streamImg(imgString=imgString, trigger=False)
                 triggerSignal = camServer.checkTrigger()
-            cam.triggerModeOn()
-
-            while triggerSignal:
-                triggerSet, imgString = cam.checkTrigger()
-                if triggerSet: 
-                    print('Streaming Image')
-                    # camServer.streamImg(imgString=imgString, trigger=True)
-                # while triggerSet: 
-                #     print('Trigger Set: ', triggerSet)
-                #     triggerSet, imgString = cam.checkTrigger()
-                    while triggerSet: 
-                        # print('Trigger Set: ', triggerSet)
-                        triggerSet, imgString = cam.checkTrigger()
-                        camServer.streamImg(imgString=imgString, trigger=True)
-                triggerSignal = camServer.checkTrigger()
-            cam.triggerModeOff()
+            elif triggerSignal:
+                print('Received Trigger Signal')
+                cam.triggerModeOn()
+                while triggerSignal:
+                    triggerSet, imgString = cam.checkTrigger()
+                    if triggerSet: 
+                        print('Streaming Image')
+                        # camServer.streamImg(imgString=imgString, trigger=True)
+                    # while triggerSet: 
+                    #     print('Trigger Set: ', triggerSet)
+                    #     triggerSet, imgString = cam.checkTrigger()
+                        while triggerSet: 
+                            # print('Trigger Set: ', triggerSet)
+                            triggerSet, imgString = cam.checkTrigger()
+                            camServer.streamImg(imgString=imgString, trigger=True)
+                    triggerSignal = camServer.checkTrigger()
+                cam.triggerModeOff()
     finally:
         serverOnline = camServer.stopServer()
 
