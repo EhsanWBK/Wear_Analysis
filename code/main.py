@@ -7,6 +7,7 @@ from os.path import join, exists
 from sys import exit
 from threading import Event, Thread
 from cv2 import imwrite
+from copy import deepcopy
 
 from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, saveTrigger
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
@@ -23,7 +24,6 @@ htmlClosed = Event(); pictureEvent = Event(); videoEvent = Event(); stopEvent = 
 
 # Thread 1:
 def startCameraOPC(sharedArray, stopEvent, triggerMode):
-    ''' Starting the OPC UA Client for the Camera.'''
     global streamFrame, triggerSet; triggerTemp = []
     print('\n----------------------- STARTING OPC UA CLIENT -----------------------')
     try:
@@ -32,15 +32,11 @@ def startCameraOPC(sharedArray, stopEvent, triggerMode):
             cameraClient.setTriggerMode(triggerMode.is_set())
             sharedArray[:] = cameraClient.getImage(); streamFrame = sharedArray
             triggerSet = cameraClient.getTrigger()
-            if triggerSet: 
-                sleep(1) # CHECK WITH REMOVED BUFFER
-                print('Received Trigger.')
-                cameraClient.receivedTrigger()
-                triggerTemp.append(streamFrame)
-                sleep(1) # CHECK WITH REMOVED BUFFER
+            if triggerSet: cameraClient.receivedTrigger(); triggerTemp.append(deepcopy(streamFrame))
             if not triggerMode.is_set() and triggerTemp != []: 
-                saveFolder = saveTrigger(triggerTemp) 
-                segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder); triggerTemp = []
+                saveFolder = saveTrigger(triggerTemp); triggerTemp = []
+                try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
+                except: print('To Segment Images load model. ')
     finally: cameraClient.stopClient()
 
 # Thread 2:
@@ -52,7 +48,7 @@ def streamVid(event, stopEvent):
         while event.is_set() and not stopEvent.is_set(): # to stop stream: call videoEvent.clear() outside of this function
             blob = reformatFrame(frame=streamFrame)
             if event.is_set() and not triggerSet: eel.updateCanvas1(blob)() # implement timeout function OR delete cache in eel, when html is closed.
-            elif event.is_set() and triggerSet: print('Received an image'); eel.updateCanvas2(blob)()
+            elif event.is_set() and triggerSet: eel.updateCanvas1(blob)()
         print('Stopped Streaming Data.')
         event.clear()
 
@@ -180,7 +176,7 @@ def stopVideo():
 
 @eel.expose()
 def setTrigger():
-    if triggerEvent.set():print('Stopping Trigger'); triggerEvent.clear()
+    if triggerEvent.is_set():print('Stopping Trigger'); triggerEvent.clear()
     else: print('Start Trigger'); triggerEvent.set()
 
 @eel.expose()
@@ -220,8 +216,7 @@ def segmentStack(pathProj, nrEdges):
     print('Segmenting Data Stack.')
     pathSeg, _ = pathCreator(pathProj, grabData=True, token='seg')
     if not exists(path=pathSeg):
-        print('Preprocessing Images for Segmentation') 
-        makedirs(pathSeg)
+        print('Preprocessing Images for Segmentation'); makedirs(pathSeg)
         pathRaw, _ = pathCreator(pathProj, grabData=True)
         rawImg, rawFileName = imageReader(pathRaw)
         preProcForSegment(imgArray=rawImg, projectPath=pathProj, fileNames=[rawFileName])

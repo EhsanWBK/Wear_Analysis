@@ -4,8 +4,8 @@ import base64
 from numpy import frombuffer, uint8
 from cv2 import imdecode
 
-# URL = 'opc.tcp://141.3.142.81:12345'
-URL = 'opc.tcp://127.0.0.1:12345'
+URL = 'opc.tcp://141.3.142.81:12345'
+# URL = 'opc.tcp://127.0.0.1:12345'
 NAMESPACE = 'CameraSpace'
 
 class CamClient:

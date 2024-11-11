@@ -12,7 +12,7 @@ IMAGE_LOAD_PATH = 'images' # source images
 MASK_LOAD_PATH = 'masks' # source masks
 SINGLE_DATA_PATH = join(CWD, 'example_images')
 TRAIN_DATA_PATH = join(CWD, 'projects')
-TRIGGER_PATH = join(CWD, join(getcwd(), 'results','trigger'))
+TRIGGER_PATH = join(CWD, join(getcwd(), 'projects','trigger'))
 SAVE_MODEL_PATH = join(CWD, 'models')
 SAVE_RES_PATH = join(CWD, 'results')
 
