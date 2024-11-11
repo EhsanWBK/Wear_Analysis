@@ -1,9 +1,5 @@
 """
 Created on Thu Mar 16 11:14:58 2023
-
-@author: programmieren
-
-Updated by: Florian Schindler
 """
 
 # general libraries

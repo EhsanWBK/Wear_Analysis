@@ -83,7 +83,7 @@
 				</table>
 			</div>		
 		</header>
-	
+		
 		<nav id="desktopmenu">
 			<h2>Menu</h2>
 			<ul class="menu-inhalt">
@@ -95,15 +95,62 @@
 				<li><a href="#"  onclick="closeAllWindows()">Close App</a></li>
 			</ul>
 		</nav>
-	
-		<article>
-			<h2>Training in Progress</h2>
-			<p>View training progress in Tensorboard</p>
-			<iframe src="http://localhost:6006/" title="Tensorboard"></iframe>
-		</article>
-	
-		<footer> <p> &copy; wbk KIT 2022 </p> </footer>
+
+        <article>
+			<table style="width: 100%;">
+				<tr>
+					<td><button onclick="window.location.href='training.html'" style="width: 100pt; height:25pt; font-size: 16px;">Back</button></td>
+				</tr>
+			</table>
+			<!-- <table style="width: 100%; padding-left: 5pt; border-spacing: 5pt 0 ;">
+				<tr>
+					<td> <summary>Model Selection</summary></td> 
+					<td> <input type="text" id="modelDispSel" style="font-size: 1.3em;" size="40%"> </td>
+					<td align="left"> <button onclick="py_directory('modelDispSel')" style="width: 180pt; height:25pt; font-size: 16px;">Select Model</button> </td>
+				</tr>
+				<tr>
+					<td> <summary>Data Selection</summary> </td>
+					<td> <input type="text" id="dataDispSel" value=" " size="52%" style="font-size: 1.025em;"> </td>
+					<td align="left"> <button onclick="py_directory('dataDispSel')" style="width: 180pt; height:25pt; font-size: 16px;">Select Saving Directory</button> </td>
+				</tr>
+			</table> -->
+			
+			<table style="width: 100%;">
+				<tr>
+					<td><h2>Training Loss</h2></td>
+					<td><h2>Model Accuracy</h2></td>
+				</tr>
+				<tr> 
+					<td> <div id="canvasContainer"> <img id="lossDisp" class="overlay" src="img/placeholder.png" alt=""> </div> </td>
+					<td> <div id="canvasContainer"> <img id="accuracyDisp" class="overlay" src="img/placeholder.png" alt=""> </div> </td>
+				</tr>
+				<tr>
+					<td><h2>Intersection Over Union (IoU)</h2></td>
+					<td><h2>Precision-Recall Curve</h2></td>
+				</tr>
+				<tr>
+					<td> <div id="canvasContainer"> <img id="iouDisp" class="overlay" src="img/placeholder.png" alt=""> </div> </td>
+					<td> <div id="canvasContainer"> <img id="prDisp" class="overlay" src="img/placeholder.png" alt=""> </div> </td>
+				</tr>
+				<tr>
+					<td><h2>F1-Score</h2></td>
+				</tr>
+				<tr>
+					<td> <div id="canvasContainer"> <img id="f1Disp" class="overlay" src="img/placeholder.png" alt=""> </div> </td>
+				</tr>
+			</table>
+			
+            
+        </article>
+        
+		<footer>
+			<a href="#ganzoben" class="footerfunktion" id="hochscrollen"> &#8679; Up </a>
+			<p> &copy; wbk KIT 2022 </p>
+		</footer>
+
 		<script type="text/javascript" src="eel.js"></script>
-		<script type="text/javascript" src="script.js"></script>	
+		<script type="text/javascript" src="segmentation.js"></script>
+		<script type="text/javascript" src="all.js"></script>
+
 	</body>
 </html>
