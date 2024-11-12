@@ -31,7 +31,9 @@ def startCamera(sharedArray, stopEvent):
     try:
         while not stopEvent.is_set(): 
             camBuffer = videoCam.getFrame()
-            sharedArray[:] = camBuffer; streamFrame = sharedArray
+            try:
+                sharedArray[:] = camBuffer; streamFrame = sharedArray
+            except: pass
             # if videoCam.triggerStatus():  pass # image is in trigger mode
     finally: videoCam.stopCam()
 
