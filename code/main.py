@@ -84,9 +84,9 @@ def observeTrigger(event, stopEvent):
         print('Start Checking Trigger')
         if event.is_set() and not stopEvent.is_set(): videoCam.triggerModeOn()
         while event.is_set() and not stopEvent.is_set():
-            print('Trigger detected.')
             frame = videoCam.getFrame(); 
             if frame.shape != (0,0,1):
+                print('Trigger detected.')
                 triggerTemp.append(deepcopy(frame))
                 blob = reformatFrame(frame=frame)
                 eel.updateCanvas2(blob)()
