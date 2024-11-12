@@ -12,7 +12,7 @@ from copy import deepcopy
 from generalUtensils import loadCurModel, imageReader, reformatFrame, saveCurModel, pathCreator, getTimeStamp, saveTrigger
 from dataPreparation import preProcStart, preProcFromCamera, preProcForSegment
 from segmentation import singleImageSegmentation, videoSegmentation, segmentDataStack
-# from cameraSystem import Baumer
+from cameraSystem import Baumer
 from modelTraining import trainCurModel, saveHistory
 from header import *
 
@@ -21,7 +21,7 @@ from header import *
 #  =========================================
 
 htmlClosed = Event(); pictureEvent = Event(); videoEvent = Event(); stopEvent = Event(); streamSegEvent = Event(); triggerEvent = Event()
-# videoCam = Baumer()
+videoCam = Baumer()
 
 # Thread 1:
 def startCamera(sharedArray, stopEvent):
@@ -76,23 +76,21 @@ def streamSeg(event, stopEvent):
 def observeTrigger(event, stopEvent):
     print('\t- Trigger Observation Thread Set Up.')
     triggerTemp = []
-    try:
-        while not stopEvent.is_set():
-            event.wait()
-            if stopEvent.is_set():return
-            print('Start Checking Trigger')
-            if event.is_set() and not stopEvent.is_set(): videoCam.triggerModeOn()
-            while event.is_set() and not stopEvent.is_set():
-                if videoCam.triggerStatus(): 
-                    frame = videoCam.getFrame(); triggerTemp.append(deepcopy(frame))
-                    blob = reformatFrame(frame=frame)
-                    eel.updateCanvas2(blob)()
-                if not videoCam.triggerStatus() and triggerTemp != []:
-                    saveFolder = saveTrigger(triggerTemp); triggerTemp = []
-                    try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
-                    except: print('To Segment Images load model. ')
-            videoCam.triggerModeOff(); event.clear()
-    except: pass
+    while not stopEvent.is_set():
+        event.wait()
+        if stopEvent.is_set():return
+        print('Start Checking Trigger')
+        if event.is_set() and not stopEvent.is_set(): videoCam.triggerModeOn()
+        while event.is_set() and not stopEvent.is_set():
+            if videoCam.triggerStatus(): 
+                frame = videoCam.getFrame(); triggerTemp.append(deepcopy(frame))
+                blob = reformatFrame(frame=frame)
+                eel.updateCanvas2(blob)()
+            if not videoCam.triggerStatus() and triggerTemp != []:
+                saveFolder = saveTrigger(triggerTemp); triggerTemp = []
+                try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
+                except: print('To Segment Images load model. ')
+        videoCam.triggerModeOff(); event.clear()
     print('Trigger Observation to be terminated')
 
 #  =========================================
