@@ -19,6 +19,7 @@ class Baumer():
         self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
         print('Video Stream established.')
         print('Setup complete.')
+        self.trigger=False
 
     def startCam(self):
         print('Starting Stream')
@@ -40,7 +41,7 @@ class Baumer():
 
     def triggerModeOff(self):
         self.camera.f.TriggerMode.value = neoapi.TriggerMode_Off
-        self.triggerStatus = False
+        self.trigger = False
 
     def triggerStatus(self):
-        return self.triggerStatus
+        return self.trigger
