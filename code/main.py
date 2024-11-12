@@ -84,16 +84,16 @@ def observeTrigger(event, stopEvent):
         print('Start Checking Trigger')
         if event.is_set() and not stopEvent.is_set(): videoCam.triggerModeOn()
         while event.is_set() and not stopEvent.is_set():
-            triggerMode = videoCam.triggerStatus()
-            if triggerMode: 
-                print('Trigger detected.')
-                frame = videoCam.getFrame(); triggerTemp.append(deepcopy(frame))
+            print('Trigger detected.')
+            frame = videoCam.getFrame(); 
+            if frame.shape != (0,0,1):
+                triggerTemp.append(deepcopy(frame))
                 blob = reformatFrame(frame=frame)
                 eel.updateCanvas2(blob)()
-            if not triggerMode and triggerTemp != []:
-                saveFolder = saveTrigger(triggerTemp); triggerTemp = []
-                try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
-                except: print('To Segment Images load model. ')
+        if triggerTemp != []:
+            saveFolder = saveTrigger(triggerTemp); triggerTemp = []
+            try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
+            except: print('To Segment Images load model. ')
         videoCam.triggerModeOff(); event.clear()
     print('Trigger Observation to be terminated')
 
