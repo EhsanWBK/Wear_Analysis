@@ -110,7 +110,7 @@ def startHTML():
         print('\n----------------------- STARTING HTML APPLICATION -----------------------')
         print('Base Directory:\t\t', BASEDIR)
         WEBDIR = join(BASEDIR, 'code', 'frontend'); print('Web Dir:\t\t',WEBDIR,'\n') 
-        eel.init(WEBDIR); eel.start("index.html")
+        eel.init(WEBDIR); sleep(1); eel.start("index.html", mode='Chrome')
     except Exception as e:exit()
 
 @eel.expose()
