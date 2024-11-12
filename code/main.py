@@ -88,8 +88,8 @@ def observeTrigger(event, stopEvent):
             if frame.shape != (0,0,1):
                 print('Trigger detected.')
                 triggerTemp.append(deepcopy(frame))
-                # blob = reformatFrame(frame=frame)
-                # eel.updateCanvas2(blob)()
+                blob = reformatFrame(frame=frame)
+                eel.updateCanvas2(blob)()
         if triggerTemp != []:
             saveFolder = saveTrigger(triggerTemp); triggerTemp = []
             try: segmentDataStack(dataPath=saveFolder, model=currentModel, savePath=saveFolder)
