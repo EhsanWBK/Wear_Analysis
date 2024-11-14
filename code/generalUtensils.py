@@ -88,7 +88,7 @@ def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConv
 
 def saveTrigger(triggerList: list):
     triggerPath = join(TRIGGER_PATH, getTimeStamp(), 'images', 'img')
-    if not exists(path=triggerPath): makedirs(path=triggerPath)
+    if not exists(path=triggerPath): makedirs(triggerPath)
     for idx in range(len(triggerList)):
         filename = join(triggerPath, 'trigger_save_'+str(idx)+'_'+getTimeStamp()+PNG_SUFFIX)
         imwrite(filename, triggerList[idx])
