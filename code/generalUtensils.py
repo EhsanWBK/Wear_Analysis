@@ -1,5 +1,5 @@
 from numpy import ndarray, expand_dims, array
-from os import listdir, remove, mkdir, getcwd
+from os import listdir, remove, mkdir, makedirs
 from os.path import join, isfile, isdir, splitext, exists
 from tqdm import tqdm
 from cv2 import imread, imwrite, imencode, resize, INTER_LINEAR
@@ -88,7 +88,7 @@ def saveFrame(pathTarget: str, image: list, token: str, names=['test'], maskConv
 
 def saveTrigger(triggerList: list):
     triggerPath = join(TRIGGER_PATH, getTimeStamp(), 'images', 'img')
-    if not exists(path=triggerPath): mkdir(path=triggerPath)
+    if not exists(path=triggerPath): makedirs(path=triggerPath)
     for idx in range(len(triggerList)):
         filename = join(triggerPath, 'trigger_save_'+str(idx)+'_'+getTimeStamp()+PNG_SUFFIX)
         imwrite(filename, triggerList[idx])
