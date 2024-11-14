@@ -86,7 +86,7 @@ def plotWearCurve(filePath, resultFolder):
     xLabel = [f'{i}' for i in range(1, (df.shape[1] - 1) * 5, 5)]
     wearCurveFolder = join(resultFolder, 'wearCurve')
     makedirs(wearCurveFolder, exist_ok=True)
-    plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(12, 8))
     for index, row in df.iterrows(): plt.plot(df.columns[1:], row[1:], marker='o', linestyle='None', label=row['Tooth'], color=colors[index % len(colors)])
     
     # Plot Total Wear Curve
@@ -117,7 +117,7 @@ def plotWearCurve(filePath, resultFolder):
         plt.tight_layout()
         individual_output_path = join(wearCurveFolder, f'VB_Curve_Tooth_{row["Tooth"]}.svg')
         plt.savefig(individual_output_path, format='svg', dpi=300)
-    return None
+    return fig
 
 def outlierDetection(filePath, resultFolder, cuttingEdges = 4):
     ''' Clean up Wear Curve from outliers with DBSCAN. '''
@@ -128,7 +128,7 @@ def outlierDetection(filePath, resultFolder, cuttingEdges = 4):
     if not exists(outlierFolder): makedirs(outlierFolder)
 
     # Plot Total Wear Curve with DBSCAN filtering 
-    plt.figure(figsize=(12,8))
+    fig = plt.figure(figsize=(12,8))
     for index, row in df.iterrows():
         wearVal = row[1:].to_numpy()
         xVal = np.arange(1, len(wearVal)+1)
@@ -172,7 +172,7 @@ def outlierDetection(filePath, resultFolder, cuttingEdges = 4):
         plt.tick_params(axis='both', which='major', labelsize=14)
         plt.tight_layout()
         plt.savefig(join(outlierFolder, f'VB_Curve_DBSCAN_Tooth_{idx + 1}.svg'), format='svg', dpi=300)
-    return None
+    return fig
 
 def plotWearCurveLOWESS(filePath, resultFolder):
     ''' Plot the Wear Curve with LOWESS Smoothing'''
